@@ -8,10 +8,13 @@ defmodule ExCypher do
 
   alias ExCypher.Query
 
+  @supported_tags [:match, :return]
+
   defmacro cypher(do: block) do
     quote do
       {:ok, var!(buffer, ExCypher)} = new_query()
-      unquote(block)
+
+      unquote(Macro.prewalk(block, &parse/1))
 
       query = generate_query(var!(buffer, ExCypher))
       stop_buffer(var!(buffer, ExCypher))
@@ -27,6 +30,14 @@ defmodule ExCypher do
       put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
     end
   end
+
+  def parse({name, _ctx, args}) when name in @supported_tags do
+    quote do
+      command(unquote(name), unquote(args))
+    end
+  end
+
+  def parse(stmt), do: stmt
 
   def put_buffer(buffer, elements) do
     Agent.update(buffer, & [ elements | &1 ])

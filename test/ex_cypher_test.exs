@@ -9,8 +9,8 @@ defmodule ExCypherTest do
       expected = ~S[MATCH (n:Node) RETURN n]
 
       query = cypher do
-        command(:match, [node(:n, [:Node])])
-        command(:return, [:n])
+        match node(:n, [:Node])
+        return :n
       end
 
       assert expected == query
