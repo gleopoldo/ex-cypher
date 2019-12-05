@@ -1,0 +1,18 @@
+#!/bin/bash
+
+command_name=$1
+shift
+command_args=$@
+
+image_name="ex-cypher"
+
+case $command_name in
+  build)
+    echo "Building dev environment...."
+    docker build --build-arg uid=$EUID -t $image_name:latest .
+  ;;
+
+  bash)
+    docker run --rm -it -v $PWD:/ex-cypher -w /ex-cypher $image_name bash
+  ;;
+esac
