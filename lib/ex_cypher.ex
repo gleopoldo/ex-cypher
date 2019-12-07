@@ -8,7 +8,8 @@ defmodule ExCypher do
 
   alias ExCypher.Query
 
-  @supported_tags [:match, :return]
+  @root_commands [:match, :return]
+  @helpers [:node]
 
   defmacro cypher(do: block) do
     quote do
@@ -23,18 +24,20 @@ defmodule ExCypher do
     end
   end
 
-  def node(name, labels), do: "(#{name}:#{Enum.join(labels, ", ")})"
-
   defmacro command(name, args \\ []) do
     quote do
       put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
     end
   end
 
-  def parse({name, _ctx, args}) when name in @supported_tags do
+  def parse({name, _ctx, args}) when name in @root_commands do
     quote do
       command(unquote(name), unquote(args))
     end
+  end
+
+  def parse({name, _ctx, args}) when name in @helpers do
+    quote do: Query.parse({unquote(name), unquote(args)})
   end
 
   def parse(stmt), do: stmt
