@@ -289,6 +289,17 @@ defmodule ExCypherTest do
     end
   end
 
+  describe "LIMIT" do
+    test "adds a limit statement" do
+      query = cypher do
+        match node([:Node])
+        limit 10
+      end
+
+      assert "MATCH (:Node) LIMIT 10" = query
+    end
+  end
+
   describe "queries with multiple statements" do
     test "builds a simple match query" do
       expected = ~S[MATCH (n:Node) RETURN n]

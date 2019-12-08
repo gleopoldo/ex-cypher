@@ -8,7 +8,7 @@ defmodule ExCypher do
 
   alias ExCypher.Query
 
-  @root_commands [:match, :return, :pipe_with, :order]
+  @root_commands [:match, :return, :pipe_with, :order, :limit]
   @helpers [:node, :--, :->, :<-, :rel]
 
   defmacro cypher(do: block) do

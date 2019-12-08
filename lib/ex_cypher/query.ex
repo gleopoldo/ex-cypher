@@ -21,6 +21,8 @@ defmodule ExCypher.Query do
     "ORDER BY #{params}"
   end
 
+  def parse({:limit, [threshold | []]}), do: "LIMIT #{threshold}"
+
   def parse({:node, args}), do: apply(Node, :node, args)
 
   def parse({:rel, args}),
