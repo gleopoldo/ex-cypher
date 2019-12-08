@@ -8,6 +8,19 @@ defmodule ExCypher.Query do
 
   def parse({:pipe_with, elements}), do: "WITH #{Enum.join(elements, ", ")}"
 
+  def parse({:order, elements}) do
+    params =
+      elements
+      |> Enum.map(fn
+        str when is_binary(str) or is_atom(str) -> str
+        {str, :asc} -> "#{str} ASC"
+        {str, :desc} -> "#{str} DESC"
+      end)
+      |> Enum.join(", ")
+
+    "ORDER BY #{params}"
+  end
+
   def parse({:node, args}), do: apply(Node, :node, args)
 
   def parse({:rel, args}),
