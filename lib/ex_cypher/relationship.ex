@@ -1,8 +1,14 @@
 defmodule ExCypher.Relationship do
   import ExCypher.Statement, only: [stringify: 1]
 
-  def rel(name, props \\ %{}) do
-    ["[:", name, props, "]"]
+  def rel(props = %{}), do: rel("", [], props)
+
+  def rel(labels, props = %{})
+      when is_list(labels),
+      do: rel("", labels, props)
+
+  def rel(name, labels \\ [], props \\ %{}) do
+    ["[", name, labels, props, "]"]
     |> Enum.map(&stringify/1)
     |> Enum.join()
   end

@@ -6,6 +6,8 @@ defmodule ExCypher.Query do
 
   def parse({:return, elements}), do: "RETURN #{Enum.join(elements, ", ")}"
 
+  def parse({:pipe_with, elements}), do: "WITH #{Enum.join(elements, ", ")}"
+
   def parse({:node, args}), do: apply(Node, :node, args)
 
   def parse({:rel, args}),

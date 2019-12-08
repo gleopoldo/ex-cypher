@@ -21,6 +21,22 @@ defmodule ExCypherTest do
       assert "MATCH (n:Node)" = query
     end
 
+    test "with only labels" do
+      query = cypher do
+        match node([:Node])
+      end
+
+      assert "MATCH (:Node)" = query
+    end
+
+    test "with only labels and props" do
+      query = cypher do
+        match node([:Node], %{name: "foo"})
+      end
+
+      assert "MATCH (:Node {\"name\":\"foo\"})" = query
+    end
+
     test "with a name and a multiple labels" do
       query = cypher do
         match node(:bob, [:Person, :Employee])
@@ -123,10 +139,20 @@ defmodule ExCypherTest do
 
   describe "MATCH relationships with props" do
     test "accepts named relationships" do
+      expected = ~S[MATCH (a)-[r\]-(b)]
+
+      query = cypher do
+        match node(:a) -- rel(:r) -- node(:b)
+      end
+
+      assert expected == query
+    end
+
+    test "accepts labeled relationships" do
       expected = ~S[MATCH (a)-[:Rel\]-(b)]
 
       query = cypher do
-        match node(:a) -- rel(:Rel) -- node(:b)
+        match node(:a) -- rel([:Rel]) -- node(:b)
       end
 
       assert expected == query
@@ -136,7 +162,7 @@ defmodule ExCypherTest do
       expected = ~S[MATCH (a)<-[:Rel\]-(b)]
 
       query = cypher do
-        match node(:a) <- rel(:Rel) -- node(:b)
+        match node(:a) <- rel([:Rel]) -- node(:b)
       end
 
       assert expected == query
@@ -146,7 +172,7 @@ defmodule ExCypherTest do
       expected = ~S[MATCH (a)-[:Rel\]->(b)]
 
       query = cypher do
-        match (node(:a) -- rel(:Rel) -> node(:b))
+        match (node(:a) -- rel([:Rel]) -> node(:b))
       end
 
       assert expected == query
@@ -156,10 +182,45 @@ defmodule ExCypherTest do
       expected = ~S[MATCH (a)-[:Rel {"name":"foo"}\]->(b)]
 
       query = cypher do
-        match (node(:a) -- rel(:Rel, %{name: "foo"}) -> node(:b))
+        match (node(:a) -- rel([:Rel], %{name: "foo"}) -> node(:b))
       end
 
       assert expected == query
+    end
+
+    test "accepts properties in named and labeled relationships" do
+      expected = ~S[MATCH (a)-[r:Rel {"name":"foo"}\]->(b)]
+
+      query = cypher do
+        match (node(:a) -- rel(:r, [:Rel], %{name: "foo"}) -> node(:b))
+      end
+
+      assert expected == query
+    end
+  end
+
+  describe "RETURN" do
+    test "returns a single element" do
+      assert "RETURN n" = cypher do: return :n
+    end
+
+    test "returns multiple elements" do
+      assert "RETURN m, n, o" = cypher do: return :m, :n, :o
+    end
+
+    test "returns an element property" do
+      assert "RETURN c.name" = cypher do: return "c.name"
+    end
+  end
+
+  describe "WITH statements" do
+    test "returns a single element" do
+      query = cypher do
+        match node(:n)
+        pipe_with :n
+      end
+
+      assert "MATCH (n) WITH n" = query
     end
   end
 
