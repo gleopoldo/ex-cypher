@@ -300,6 +300,32 @@ defmodule ExCypherTest do
     end
   end
 
+  describe "CREATE" do
+    test "returns a create statement" do
+      query = cypher do
+        create node([:Node], %{name: "prop"})
+      end
+
+      assert "CREATE (:Node {\"name\":\"prop\"})" = query
+    end
+
+    test "accepts multiple elements" do
+      query = cypher do
+        create node(:a), node(:b)
+      end
+
+      assert "CREATE (a), (b)" = query
+    end
+
+    test "accepts relationships" do
+      query = cypher do
+        create (node(:a) -- rel([:R]) -> node(:b))
+      end
+
+      assert "CREATE (a)-[:R]->(b)" = query
+    end
+  end
+
   describe "queries with multiple statements" do
     test "builds a simple match query" do
       expected = ~S[MATCH (n:Node) RETURN n]
