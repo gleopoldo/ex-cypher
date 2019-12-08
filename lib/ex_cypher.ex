@@ -9,7 +9,7 @@ defmodule ExCypher do
   alias ExCypher.Query
 
   @root_commands [:match, :return]
-  @helpers [:node]
+  @helpers [:node, :--, :->, :<-]
 
   defmacro cypher(do: block) do
     quote do
@@ -43,7 +43,7 @@ defmodule ExCypher do
   def parse(stmt), do: stmt
 
   def put_buffer(buffer, elements) do
-    Agent.update(buffer, & [ elements | &1 ])
+    Agent.update(buffer, &[elements | &1])
   end
 
   def generate_query(buffer) do
