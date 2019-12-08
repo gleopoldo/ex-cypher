@@ -326,6 +326,32 @@ defmodule ExCypherTest do
     end
   end
 
+  describe "MERGE" do
+    test "returns a MERGE statement" do
+      query = cypher do
+        merge node([:Node], %{name: "prop"})
+      end
+
+      assert "MERGE (:Node {\"name\":\"prop\"})" = query
+    end
+
+    test "accepts multiple elements" do
+      query = cypher do
+        merge node(:a), node(:b)
+      end
+
+      assert "MERGE (a), (b)" = query
+    end
+
+    test "accepts relationships" do
+      query = cypher do
+        merge (node(:a) -- rel([:R]) -> node(:b))
+      end
+
+      assert "MERGE (a)-[:R]->(b)" = query
+    end
+  end
+
   describe "queries with multiple statements" do
     test "builds a simple match query" do
       expected = ~S[MATCH (n:Node) RETURN n]

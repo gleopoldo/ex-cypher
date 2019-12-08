@@ -25,6 +25,8 @@ defmodule ExCypher.Query do
 
   def parse({:create, elements}), do: "CREATE #{Enum.join(elements, ", ")}"
 
+  def parse({:merge, elements}), do: "MERGE #{Enum.join(elements, ", ")}"
+
   def parse({:node, args}), do: apply(Node, :node, args)
 
   def parse({:rel, args}),
