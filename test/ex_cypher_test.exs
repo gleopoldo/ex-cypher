@@ -121,6 +121,48 @@ defmodule ExCypherTest do
     end
   end
 
+  describe "MATCH relationships with props" do
+    test "accepts named relationships" do
+      expected = ~S[MATCH (a)-[:Rel\]-(b)]
+
+      query = cypher do
+        match node(:a) -- rel(:Rel) -- node(:b)
+      end
+
+      assert expected == query
+    end
+
+    test "accepts backwards named relationships" do
+      expected = ~S[MATCH (a)<-[:Rel\]-(b)]
+
+      query = cypher do
+        match node(:a) <- rel(:Rel) -- node(:b)
+      end
+
+      assert expected == query
+    end
+
+    test "accepts towards named relationships" do
+      expected = ~S[MATCH (a)-[:Rel\]->(b)]
+
+      query = cypher do
+        match (node(:a) -- rel(:Rel) -> node(:b))
+      end
+
+      assert expected == query
+    end
+
+    test "accepts properties in relationships" do
+      expected = ~S[MATCH (a)-[:Rel {"name":"foo"}\]->(b)]
+
+      query = cypher do
+        match (node(:a) -- rel(:Rel, %{name: "foo"}) -> node(:b))
+      end
+
+      assert expected == query
+    end
+  end
+
   describe "queries with multiple statements" do
     test "builds a simple match query" do
       expected = ~S[MATCH (n:Node) RETURN n]

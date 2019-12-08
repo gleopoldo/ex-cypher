@@ -9,7 +9,7 @@ defmodule ExCypher do
   alias ExCypher.Query
 
   @root_commands [:match, :return]
-  @helpers [:node, :--, :->, :<-]
+  @helpers [:node, :--, :->, :<-, :rel]
 
   defmacro cypher(do: block) do
     quote do
