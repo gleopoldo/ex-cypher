@@ -9,7 +9,8 @@ defmodule ExCypher do
   alias ExCypher.Query
 
   @root_commands [:match, :return, :pipe_with, :order,
-    :limit, :create, :merge]
+    :limit, :create, :merge, :where]
+
   @helpers [:node, :--, :->, :<-, :rel]
 
   defmacro cypher(do: block) do
@@ -28,6 +29,27 @@ defmodule ExCypher do
   defmacro command(name, args \\ []) do
     quote do
       put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
+    end
+  end
+
+  def parse({:where, _ctx, args}) do
+    params = Enum.map(args, & Macro.to_string(&1, fn
+      # Removing parenthesis from statements that elixir
+      # attempts to resolve a name as a function.
+      {{:., _, [first, last | []]}, _, _args}, _str ->
+        sanitize = fn
+          term when is_atom(term) -> Atom.to_string(term)
+          term -> Macro.to_string(term)
+        end
+
+        "#{sanitize.(first)}.#{sanitize.(last)}"
+
+      _ast, str ->
+        str
+    end))
+
+    quote do
+      command(:where, unquote(params))
     end
   end
 

@@ -27,6 +27,8 @@ defmodule ExCypher.Query do
 
   def parse({:merge, elements}), do: "MERGE #{Enum.join(elements, ", ")}"
 
+  def parse({:where, args}), do: "WHERE #{args}"
+
   def parse({:node, args}), do: apply(Node, :node, args)
 
   def parse({:rel, args}),
@@ -41,5 +43,5 @@ defmodule ExCypher.Query do
   def parse({:<-, [from, to | []]}),
     do: apply(Relationship, :assoc, [:<-, {from, to}])
 
-  def parse(_statement), do: ""
+  def parse(stmt), do: ""
 end

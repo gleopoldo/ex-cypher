@@ -352,6 +352,17 @@ defmodule ExCypherTest do
     end
   end
 
+  describe "WHERE clauses" do
+    test "returns correct query when matching for equality" do
+      query = cypher do
+        match node(:a, [:Node])
+        where a.name = "bob"
+      end
+
+      assert "MATCH (a:Node) WHERE a.name = \"bob\"" = query
+    end
+  end
+
   describe "queries with multiple statements" do
     test "builds a simple match query" do
       expected = ~S[MATCH (n:Node) RETURN n]
