@@ -48,5 +48,5 @@ defmodule ExCypher.Query do
   def parse({:<-, [from, to | []]}),
     do: apply(Relationship, :assoc, [:<-, {from, to}])
 
-  def parse(stmt), do: ""
+  def parse(_stmt), do: ""
 end
