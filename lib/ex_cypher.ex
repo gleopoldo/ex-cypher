@@ -13,6 +13,36 @@ defmodule ExCypher do
 
   @helpers [:node, :--, :->, :<-, :rel]
 
+  @doc """
+  Wraps contents of a Cypher query and returns the query string.
+
+  ### Usage:
+
+  First of all, add `import ExCpyher` to the top of your module, so that
+  `cypher` macro is available to your functions, then you can run it to generate
+  you cypher queries.
+
+  ### Examples:
+
+  ##### MATCH statements:
+
+  1. Matching nodes without returning a specific property
+
+  ```
+    iex> cypher do: match(node(:n))
+    "MATCH (n)"
+
+    iex> cypher do: match(node(:p, [:Person]))
+    "MATCH (p:Person)"
+
+    iex> cypher do
+    ...>   match(node(:p, [:Person], %{name: "bob"}))
+    ...> end
+    ~S[MATCH (p:Person {"name":"bob"})]
+
+  ```
+
+  """
   defmacro cypher(do: block) do
     quote do
       {:ok, var!(buffer, ExCypher)} = new_query()

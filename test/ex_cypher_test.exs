@@ -1,6 +1,6 @@
 defmodule ExCypherTest do
   use ExUnit.Case
-  doctest ExCypher
+  doctest ExCypher, import: true
 
   import ExCypher
 
