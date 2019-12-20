@@ -37,7 +37,7 @@ defmodule ExCypherTest do
           match(node([:Node], %{name: "foo"}))
         end
 
-      assert "MATCH (:Node {\"name\":\"foo\"})" = query
+      assert ~S[MATCH (:Node {"name":"foo"})] = query
     end
 
     test "with a name and a multiple labels" do
@@ -339,7 +339,7 @@ defmodule ExCypherTest do
           create(node([:Node], %{name: "prop"}))
         end
 
-      assert "CREATE (:Node {\"name\":\"prop\"})" = query
+      assert ~S[CREATE (:Node {"name":"prop"})] = query
     end
 
     test "accepts multiple elements" do
@@ -368,7 +368,7 @@ defmodule ExCypherTest do
           merge(node([:Node], %{name: "prop"}))
         end
 
-      assert "MERGE (:Node {\"name\":\"prop\"})" = query
+      assert ~S[MERGE (:Node {"name":"prop"})] = query
     end
 
     test "accepts multiple elements" do

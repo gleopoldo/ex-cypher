@@ -1,4 +1,8 @@
 defmodule ExCypher.Statement do
+  @moduledoc """
+  Grouped functions to help converting statements
+  """
+
   def stringify(element)
       when is_atom(element),
       do: Atom.to_string(element)

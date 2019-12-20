@@ -1,6 +1,18 @@
 defmodule ExCypher.Where do
+  @moduledoc """
+    Parses WHERE statements into cypher compliant statements, avoiding some
+    changes made by elixir's compiler into the `where` statements
+  """
   @logical_operators [:and, :or]
 
+  @doc """
+    Designed to work directly with `Macro.to_string/2`, in which it receives
+    two arguments:
+
+      1. The AST node being parsed
+      2. The original elixir representation for that AST node
+  """
+  @spec parse(ast :: term(), str :: String.t()) :: String.t()
   def parse(ast, str) do
     parse_operator(ast, str)
   end

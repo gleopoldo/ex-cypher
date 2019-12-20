@@ -1,7 +1,12 @@
 defmodule ExCypher.Query do
+  @moduledoc """
+  Converts each buffered AST structure into their correct representations in
+  Cypher query language.
+  """
   alias ExCypher.Node
   alias ExCypher.Relationship
 
+  @spec parse({language_struc :: atom(), arguments :: term()}) :: String.t()
   def parse({:match, elements}), do: "MATCH #{Enum.join(elements, ", ")}"
 
   def parse({:return, elements}), do: "RETURN #{Enum.join(elements, ", ")}"
