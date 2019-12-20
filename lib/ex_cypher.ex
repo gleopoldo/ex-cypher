@@ -7,9 +7,9 @@ defmodule ExCypher do
   """
 
   alias ExCypher.Query
+  alias ExCypher.Where
 
-  @root_commands [:match, :return, :pipe_with, :order,
-    :limit, :create, :merge, :where]
+  @root_commands [:match, :return, :pipe_with, :order, :limit, :create, :merge, :where]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
@@ -33,20 +33,10 @@ defmodule ExCypher do
   end
 
   def parse({:where, _ctx, args}) do
-    params = Enum.map(args, & Macro.to_string(&1, fn
-      # Removing parenthesis from statements that elixir
-      # attempts to resolve a name as a function.
-      {{:., _, [first, last | []]}, _, _args}, _str ->
-        sanitize = fn
-          term when is_atom(term) -> Atom.to_string(term)
-          term -> Macro.to_string(term)
-        end
-
-        "#{sanitize.(first)}.#{sanitize.(last)}"
-
-      _ast, str ->
-        str
-    end))
+    params =
+      Enum.map(args, fn ast_node ->
+        Macro.to_string(ast_node, &Where.parse/2)
+      end)
 
     quote do
       command(:where, unquote(params))
