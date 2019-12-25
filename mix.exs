@@ -30,7 +30,7 @@ defmodule ExCypher.MixProject do
 
   defp package do
     [
-      name: "ex-cypher",
+      name: "ex_cypher",
       licenses: ["MIT"],
       source_url: "https://github.com/gleopoldo/ex-cypher",
       links: %{"GitHub" => "https://github.com/gleopoldo/ex-cypher"}

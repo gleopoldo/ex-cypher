@@ -1,11 +1,15 @@
 # ExCypher
 
-**TODO: Add description**
+Want a DSL to interact with Neo4j? Tired of concatenating stuff in your queries?
+
+Use Ex-Cypher!
+
+This project aims to solve that problems by providing a clean DSL to interact
+with Neo4j through Cypher query language.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_cypher` to your list of dependencies in `mix.exs`:
+Add this to your `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +19,44 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ex_cypher](https://hexdocs.pm/ex_cypher).
+## Usage
 
+Let's try to build some simple queries with `ex-cypher`:
+
+#### Basic Usage
+
+Add to your module this first line:
+
+```
+import ExCypher, only: [:cypher]
+```
+
+Then you can play around with our `cypher` macro. It'll attempt to convert
+all you calls to cypher compliant code:
+
+```elixir
+cypher do
+  match node(:p, [:Person], %{first_name: "bob", last_name: "thaves"})
+  return :p
+end
+```
+
+Returns:
+
+```
+MATCH (p:Person {"first_name":"bob", "last_name":"thaves"})
+RETURN p
+```
+
+I strongly recommend you to read the project docs [here](https://hexdocs.pm/ex_cypher).
+
+### Contributing
+
+All help and feedback is welcome. If you want to contribute with PR, 
+I've created a simple development environment with docker (so that one doesn't
+need to have elixir installed locally) - and you can run it's CLI through
+`./script/ex-cypher`.
+
+### License
+
+This project is distributed under the MIT license.
