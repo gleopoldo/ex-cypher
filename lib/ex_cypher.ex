@@ -125,10 +125,7 @@ defmodule ExCypher do
   alias ExCypher.Query
   alias ExCypher.Statement
 
-  @root_commands []
   @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
-
-  @helpers [:node, :--, :->, :<-, :rel]
 
   @doc """
   Wraps contents of a Cypher query and returns the query string.
@@ -161,16 +158,6 @@ defmodule ExCypher do
     quote do
       command(unquote(command), unquote(params))
     end
-  end
-
-  def parse({name, _ctx, args}) when name in @root_commands do
-    quote do
-      command(unquote(name), unquote(args))
-    end
-  end
-
-  def parse({name, _ctx, args}) when name in @helpers do
-    quote do: Query.parse({unquote(name), unquote(args)})
   end
 
   def parse(stmt), do: stmt
