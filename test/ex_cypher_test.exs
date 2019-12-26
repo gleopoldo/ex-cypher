@@ -251,7 +251,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with("rand()")
+          pipe_with fragment("rand()")
         end
 
       assert "MATCH (n) WITH rand()" = query
@@ -261,7 +261,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with("rand()", "n")
+          pipe_with fragment("rand()"), :n
         end
 
       assert "MATCH (n) WITH rand(), n" = query
