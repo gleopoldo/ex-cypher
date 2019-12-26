@@ -232,7 +232,7 @@ defmodule ExCypherTest do
     end
 
     test "returns an element property" do
-      assert "RETURN c.name" = cypher(do: return c.name)
+      assert "RETURN c.name" = cypher(do: return(c.name))
     end
   end
 
@@ -251,7 +251,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with fragment("rand()")
+          pipe_with(fragment("rand()"))
         end
 
       assert "MATCH (n) WITH rand()" = query
@@ -261,7 +261,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with fragment("rand()"), :n
+          pipe_with(fragment("rand()"), :n)
         end
 
       assert "MATCH (n) WITH rand(), n" = query
@@ -383,7 +383,7 @@ defmodule ExCypherTest do
     test "accepts relationships" do
       query =
         cypher do
-          merge (node(:a) -- rel([:R]) -> node(:b))
+          merge((node(:a) -- rel([:R]) -> node(:b)))
         end
 
       assert "MERGE (a)-[:R]->(b)" = query
