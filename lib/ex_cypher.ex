@@ -126,6 +126,7 @@ defmodule ExCypher do
   alias ExCypher.Statement
 
   @root_commands [:match, :pipe_with, :limit, :create, :merge]
+  @supported_statements [:return, :where, :order]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
@@ -151,36 +152,14 @@ defmodule ExCypher do
     end
   end
 
-  def parse({:order, _ctx, args}) do
+  def parse({command, _ctx, args}) when command in @supported_statements do
     params =
       Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Statement.parse(:order, &1, &2))
+        Macro.to_string(ast_node, &Statement.parse(command, &1, &2))
       end)
 
     quote do
-      command(:order, unquote(params))
-    end
-  end
-
-  def parse({:where, _ctx, args}) do
-    params =
-      Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Statement.parse(:where, &1, &2))
-      end)
-
-    quote do
-      command(:where, unquote(params))
-    end
-  end
-
-  def parse({:return, _ctx, args}) do
-    params =
-      Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Statement.parse(:return, &1, &2))
-      end)
-
-    quote do
-      command(:return, unquote(params))
+      command(unquote(command), unquote(params))
     end
   end
 
