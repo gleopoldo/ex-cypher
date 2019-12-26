@@ -2,7 +2,7 @@ defmodule ExCypher.Relationship do
   @moduledoc """
   Mounts Cypher syntax-compliant relationships between nodes.
   """
-  import ExCypher.Statement, only: [stringify: 1]
+  import ExCypher.Props, only: [stringify: 1]
 
   @typep assoc_direction :: :-- | :-> | :<-
   @typep node_or_relationship :: String.t()

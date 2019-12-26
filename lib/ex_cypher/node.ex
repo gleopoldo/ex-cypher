@@ -6,7 +6,7 @@ defmodule ExCypher.Node do
   graph nodes.
   """
 
-  import ExCypher.Statement, only: [stringify: 1]
+  import ExCypher.Props, only: [stringify: 1]
 
   @doc """
   Returns the CYPHER's syntax to a node element.
