@@ -232,7 +232,7 @@ defmodule ExCypherTest do
     end
 
     test "returns an element property" do
-      assert "RETURN c.name" = cypher(do: return("c.name"))
+      assert "RETURN c.name" = cypher(do: return c.name)
     end
   end
 

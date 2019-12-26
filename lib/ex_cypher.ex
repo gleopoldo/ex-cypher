@@ -74,7 +74,7 @@ defmodule ExCypher do
     ...>   match node(:s, [:Sharks])
     ...>   order s.name
     ...>   limit 10
-    ...>   return "s.name", "s.population"
+    ...>   return s.name, s.population
     ...> end
     "MATCH (s:Sharks) ORDER BY s.name LIMIT 10 RETURN s.name, s.population"
 
@@ -87,7 +87,7 @@ defmodule ExCypher do
     iex> cypher do
     ...>   match node(:s, [:Sharks])
     ...>   order {s.name, :asc}, {s.age, :desc}
-    ...>   return "s"
+    ...>   return :s
     ...> end
     "MATCH (s:Sharks) ORDER BY s.name ASC, s.age DESC RETURN s"
 
@@ -101,7 +101,7 @@ defmodule ExCypher do
   ```
     iex> cypher do
     ...>   create node(:p, [:Player], %{nick: "like4boss", score: "100"})
-    ...>   return "p.name"
+    ...>   return p.name
     ...> end
     ~S[CREATE (p:Player {"nick":"like4boss","score":"100"}) RETURN p.name]
 
@@ -114,7 +114,7 @@ defmodule ExCypher do
     iex> cypher do
     ...>   merge node(:p, [:Player], %{nick: "like4boss"})
     ...>   merge node(:p2, [:Player], %{nick: "marioboss"})
-    ...>   return "p.name"
+    ...>   return p.name
     ...> end
     ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) RETURN p.name|
 
@@ -125,7 +125,7 @@ defmodule ExCypher do
   alias ExCypher.Query
   alias ExCypher.Statement
 
-  @root_commands [:match, :return, :pipe_with, :limit, :create, :merge]
+  @root_commands [:match, :pipe_with, :limit, :create, :merge]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
@@ -170,6 +170,17 @@ defmodule ExCypher do
 
     quote do
       command(:where, unquote(params))
+    end
+  end
+
+  def parse({:return, _ctx, args}) do
+    params =
+      Enum.map(args, fn ast_node ->
+        Macro.to_string(ast_node, &Statement.parse(:return, &1, &2))
+      end)
+
+    quote do
+      command(:return, unquote(params))
     end
   end
 
