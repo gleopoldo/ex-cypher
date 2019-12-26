@@ -383,7 +383,7 @@ defmodule ExCypherTest do
     test "accepts relationships" do
       query =
         cypher do
-          merge((node(:a) -- rel([:R]) -> node(:b)))
+          merge (node(:a) -- rel([:R]) -> node(:b))
         end
 
       assert "MERGE (a)-[:R]->(b)" = query
