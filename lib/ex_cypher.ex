@@ -123,10 +123,9 @@ defmodule ExCypher do
   """
 
   alias ExCypher.Query
-  alias ExCypher.Where
-  alias ExCypher.Order
+  alias ExCypher.Statement
 
-  @root_commands [:match, :return, :pipe_with, :order, :limit, :create, :merge]
+  @root_commands [:match, :return, :pipe_with, :limit, :create, :merge]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
@@ -155,7 +154,7 @@ defmodule ExCypher do
   def parse({:order, _ctx, args}) do
     params =
       Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Order.parse/2)
+        Macro.to_string(ast_node, &Statement.parse(:order, &1, &2))
       end)
 
     quote do
@@ -166,7 +165,7 @@ defmodule ExCypher do
   def parse({:where, _ctx, args}) do
     params =
       Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Where.parse/2)
+        Macro.to_string(ast_node, &Statement.parse(:where, &1, &2))
       end)
 
     quote do

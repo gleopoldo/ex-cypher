@@ -1,9 +1,9 @@
-defmodule ExCypher.Where do
+defmodule ExCypher.Statements.Where do
   @moduledoc """
     Parses WHERE statements into cypher compliant statements, avoiding some
     changes made by elixir's compiler into the `where` statements
   """
-  alias ExCypher.Statement
+  alias ExCypher.Statements.Generic
 
   @logical_operators [:and, :or]
 
@@ -27,8 +27,8 @@ defmodule ExCypher.Where do
       |> Atom.to_string()
       |> String.upcase()
 
-    "#{Statement.parse(first)} #{operator_name} #{Statement.parse(last)}"
+    "#{Generic.parse(first)} #{operator_name} #{Generic.parse(last)}"
   end
 
-  defp parse_operator(ast, str), do: Statement.parse(ast, str)
+  defp parse_operator(ast, str), do: Generic.parse(ast, str)
 end

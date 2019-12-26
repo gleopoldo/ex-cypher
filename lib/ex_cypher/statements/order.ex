@@ -1,9 +1,9 @@
-defmodule ExCypher.Order do
+defmodule ExCypher.Statements.Order do
   @moduledoc """
     Parses ORDER statements and provides support
     for ASC and DESC ordering syntax.
   """
-  alias ExCypher.Statement
+  alias ExCypher.Statements.Generic
 
   @doc """
     Provides support to `ASC` and `DESC` syntax in `ORDER BY`
@@ -13,11 +13,11 @@ defmodule ExCypher.Order do
   def parse({:{}, _ctx, [variable, ordering | []]}, _str) do
     direction =
       ordering
-      |> Statement.parse()
+      |> Generic.parse()
       |> String.upcase()
 
-    "#{Statement.parse(variable)} #{direction}"
+    "#{Generic.parse(variable)} #{direction}"
   end
 
-  def parse(ast, str), do: Statement.parse(ast, str)
+  def parse(ast, str), do: Generic.parse(ast, str)
 end
