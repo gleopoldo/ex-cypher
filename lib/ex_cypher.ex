@@ -125,8 +125,8 @@ defmodule ExCypher do
   alias ExCypher.Query
   alias ExCypher.Statement
 
-  @root_commands [:match]
-  @supported_statements [:create, :merge, :return, :where, :pipe_with, :order, :limit]
+  @root_commands []
+  @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
