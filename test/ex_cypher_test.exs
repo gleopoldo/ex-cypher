@@ -232,7 +232,7 @@ defmodule ExCypherTest do
     end
 
     test "returns an element property" do
-      assert "RETURN c.name" = cypher(do: return("c.name"))
+      assert "RETURN c.name" = cypher(do: return(c.name))
     end
   end
 
@@ -251,7 +251,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with("rand()")
+          pipe_with(fragment("rand()"))
         end
 
       assert "MATCH (n) WITH rand()" = query
@@ -261,7 +261,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          pipe_with("rand()", "n")
+          pipe_with(fragment("rand()"), :n)
         end
 
       assert "MATCH (n) WITH rand(), n" = query
@@ -283,7 +283,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order("n.name")
+          order(n.name)
         end
 
       assert "MATCH (n) ORDER BY n.name" = query
@@ -293,7 +293,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order("rand()", "n")
+          order(fragment("rand()"), :n)
         end
 
       assert "MATCH (n) ORDER BY rand(), n" = query
@@ -303,7 +303,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order({"n", :asc})
+          order({:n, :asc})
         end
 
       assert "MATCH (n) ORDER BY n ASC" = query
@@ -313,7 +313,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order({"n", :desc})
+          order({:n, :desc})
         end
 
       assert "MATCH (n) ORDER BY n DESC" = query

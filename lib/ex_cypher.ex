@@ -72,11 +72,24 @@ defmodule ExCypher do
   ```
     iex> cypher do
     ...>   match node(:s, [:Sharks])
-    ...>   order "s.name"
+    ...>   order s.name
     ...>   limit 10
-    ...>   return "s.name", "s.population"
+    ...>   return s.name, s.population
     ...> end
     "MATCH (s:Sharks) ORDER BY s.name LIMIT 10 RETURN s.name, s.population"
+
+  ```
+
+  Also, you can choose the ordering direction of your matched nodes with a
+  tuple syntax:
+
+  ```
+    iex> cypher do
+    ...>   match node(:s, [:Sharks])
+    ...>   order {s.name, :asc}, {s.age, :desc}
+    ...>   return :s
+    ...> end
+    "MATCH (s:Sharks) ORDER BY s.name ASC, s.age DESC RETURN s"
 
   ```
 
@@ -88,7 +101,7 @@ defmodule ExCypher do
   ```
     iex> cypher do
     ...>   create node(:p, [:Player], %{nick: "like4boss", score: "100"})
-    ...>   return "p.name"
+    ...>   return p.name
     ...> end
     ~S[CREATE (p:Player {"nick":"like4boss","score":"100"}) RETURN p.name]
 
@@ -101,20 +114,26 @@ defmodule ExCypher do
     iex> cypher do
     ...>   merge node(:p, [:Player], %{nick: "like4boss"})
     ...>   merge node(:p2, [:Player], %{nick: "marioboss"})
-    ...>   return "p.name"
+    ...>   return p.name
     ...> end
     ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) RETURN p.name|
+
+    iex> cypher do
+    ...>   merge node(:p, [:Player], %{nick: "like4boss"})
+    ...>   merge node(:p2, [:Player], %{nick: "marioboss"})
+    ...>   merge (node(:p) -- rel([:IN_LOBBY]) -> node(:p2))
+    ...>   return p.name
+    ...> end
+    ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) MERGE (p)-[:IN_LOBBY]->(p2) RETURN p.name|
 
   ```
 
   """
 
   alias ExCypher.Query
-  alias ExCypher.Where
+  alias ExCypher.Statement
 
-  @root_commands [:match, :return, :pipe_with, :order, :limit, :create, :merge, :where]
-
-  @helpers [:node, :--, :->, :<-, :rel]
+  @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
 
   @doc """
   Wraps contents of a Cypher query and returns the query string.
@@ -138,25 +157,15 @@ defmodule ExCypher do
     end
   end
 
-  def parse({:where, _ctx, args}) do
+  def parse({command, _ctx, args}) when command in @supported_statements do
     params =
       Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Where.parse/2)
+        Macro.to_string(ast_node, &Statement.parse(command, &1, &2))
       end)
 
     quote do
-      command(:where, unquote(params))
+      command(unquote(command), unquote(params))
     end
-  end
-
-  def parse({name, _ctx, args}) when name in @root_commands do
-    quote do
-      command(unquote(name), unquote(args))
-    end
-  end
-
-  def parse({name, _ctx, args}) when name in @helpers do
-    quote do: Query.parse({unquote(name), unquote(args)})
   end
 
   def parse(stmt), do: stmt
