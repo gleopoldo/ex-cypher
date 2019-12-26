@@ -118,6 +118,14 @@ defmodule ExCypher do
     ...> end
     ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) RETURN p.name|
 
+    iex> cypher do
+    ...>   merge node(:p, [:Player], %{nick: "like4boss"})
+    ...>   merge node(:p2, [:Player], %{nick: "marioboss"})
+    ...>   merge (node(:p) -- rel([:IN_LOBBY]) -> node(:p2))
+    ...>   return p.name
+    ...> end
+    ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) MERGE (p)-[:IN_LOBBY]->(p2) RETURN p.name|
+
   ```
 
   """
