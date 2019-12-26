@@ -283,7 +283,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order("n.name")
+          order n.name
         end
 
       assert "MATCH (n) ORDER BY n.name" = query
@@ -293,7 +293,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order("rand()", "n")
+          order fragment("rand()"), :n
         end
 
       assert "MATCH (n) ORDER BY rand(), n" = query
@@ -303,7 +303,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order({"n", :asc})
+          order {:n, :asc}
         end
 
       assert "MATCH (n) ORDER BY n ASC" = query
@@ -313,7 +313,7 @@ defmodule ExCypherTest do
       query =
         cypher do
           match(node(:n))
-          order({"n", :desc})
+          order {:n, :desc}
         end
 
       assert "MATCH (n) ORDER BY n DESC" = query

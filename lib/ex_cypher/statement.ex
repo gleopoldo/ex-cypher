@@ -20,13 +20,27 @@ defmodule ExCypher.Statement do
     can be shared with other modules
   """
 
+  @spec parse(ast :: term(), str :: String.t()) :: String.t()
+
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse(ast = {{:., _, [_first, _last | []]}, _, _}, _str) do
     parse(ast)
   end
 
+  # Injects raw cypher functions
+  def parse({:fragment, _ctx, args}, _str) do
+    args
+    |> Enum.map(&parse/1)
+    |> Enum.map(& String.replace(&1, "\"", ""))
+    |> Enum.join(", ")
+  end
+
+  def parse(ast, _str) when is_atom(ast), do: Atom.to_string(ast)
+
   def parse(_ast, str), do: str
+
+  @spec parse(ast :: term()) :: String.t()
 
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.

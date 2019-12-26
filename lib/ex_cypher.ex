@@ -72,11 +72,24 @@ defmodule ExCypher do
   ```
     iex> cypher do
     ...>   match node(:s, [:Sharks])
-    ...>   order "s.name"
+    ...>   order s.name
     ...>   limit 10
     ...>   return "s.name", "s.population"
     ...> end
     "MATCH (s:Sharks) ORDER BY s.name LIMIT 10 RETURN s.name, s.population"
+
+  ```
+
+  Also, you can choose the ordering direction of your matched nodes with a
+  tuple syntax:
+
+  ```
+    iex> cypher do
+    ...>   match node(:s, [:Sharks])
+    ...>   order {s.name, :asc}, {s.age, :desc}
+    ...>   return "s"
+    ...> end
+    "MATCH (s:Sharks) ORDER BY s.name ASC, s.age DESC RETURN s"
 
   ```
 
@@ -111,8 +124,9 @@ defmodule ExCypher do
 
   alias ExCypher.Query
   alias ExCypher.Where
+  alias ExCypher.Order
 
-  @root_commands [:match, :return, :pipe_with, :order, :limit, :create, :merge, :where]
+  @root_commands [:match, :return, :pipe_with, :order, :limit, :create, :merge]
 
   @helpers [:node, :--, :->, :<-, :rel]
 
@@ -135,6 +149,17 @@ defmodule ExCypher do
   defmacro command(name, args \\ []) do
     quote do
       put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
+    end
+  end
+
+  def parse({:order, _ctx, args}) do
+    params =
+      Enum.map(args, fn ast_node ->
+        Macro.to_string(ast_node, &Order.parse/2)
+      end)
+
+    quote do
+      command(:order, unquote(params))
     end
   end
 
