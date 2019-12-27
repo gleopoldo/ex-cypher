@@ -130,59 +130,52 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.Query
-  alias ExCypher.Statement
+  alias ExCypher.{Buffer, Statement}
 
   @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
 
   @doc """
-  Wraps contents of a Cypher query and returns the query string.
+    Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
     quote do
-      {:ok, var!(buffer, ExCypher)} = new_query()
+      {:ok, var!(buffer, ExCypher)} = Buffer.new_query()
 
       unquote(Macro.prewalk(block, &parse/1))
 
-      query = generate_query(var!(buffer, ExCypher))
-      stop_buffer(var!(buffer, ExCypher))
+      query = Buffer.generate_query(var!(buffer, ExCypher))
+      Buffer.stop_buffer(var!(buffer, ExCypher))
 
       query
     end
   end
 
-  defmacro command(name, args \\ []) do
+  @doc """
+    Saves a query line into the query buffer (where the other query lines)
+    are being kept isolated.
+
+    Since those query lines break with elixir's language syntax, we cannot
+    call `unquote` on them, thus making the macro approach necessary.
+
+    Also, `buffer` pid is on another scope, and cannot be accessed directly
+    by the `parse` function.
+  """
+  defmacro command(args) do
     quote do
-      put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
+      Buffer.put_buffer(var!(buffer, ExCypher), unquote(args))
     end
   end
 
+  @doc """
+    Parses each command-line from the `cypher` macro's block
+  """
   def parse({command, _ctx, args}) when command in @supported_statements do
-    params =
-      Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Statement.parse(command, &1, &2))
-      end)
+    params = Statement.parse(command, args)
 
     quote do
-      command(unquote(command), unquote(params))
+      command(unquote(params))
     end
   end
 
   def parse(stmt), do: stmt
-
-  def put_buffer(buffer, elements) do
-    Agent.update(buffer, &[elements | &1])
-  end
-
-  def generate_query(buffer) do
-    buffer
-    |> Agent.get(fn query -> query end)
-    |> Enum.reverse()
-    |> Enum.map(&Query.parse/1)
-    |> Enum.join(" ")
-  end
-
-  def stop_buffer(buffer), do: Agent.stop(buffer)
-
-  def new_query, do: Agent.start_link(fn -> [] end)
 end

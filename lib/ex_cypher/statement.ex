@@ -17,17 +17,26 @@ defmodule ExCypher.Statement do
 
   @type command_name :: atom
 
-  @spec parse(name :: command_name(), ast :: term(), str :: String.t()) ::
+  @spec parse(name :: command_name(), ast :: term()) ::
           String.t()
-  def parse(:where, ast, str) do
-    Where.parse(ast, str)
+  def parse(:where, ast) do
+    "WHERE #{Where.parse(ast)}"
   end
 
-  def parse(:order, ast, str) do
-    Order.parse(ast, str)
+  def parse(:order, ast) do
+    "ORDER BY #{Order.parse(ast)}"
   end
 
-  def parse(_, ast, str) do
-    Generic.parse(ast, str)
+  def parse(:pipe_with, ast) do
+    "WITH #{Generic.parse(ast)}"
+  end
+
+  def parse(term, ast) do
+    command_name =
+      term
+      |> Atom.to_string()
+      |> String.upcase()
+
+    "#{command_name} #{Generic.parse(ast)}"
   end
 end
