@@ -9,6 +9,8 @@ defmodule ExCypher.Props do
   both nodes and relationships arguments.
   """
 
+  def stringify(nil), do: ""
+
   def stringify(element)
       when is_atom(element),
       do: Atom.to_string(element)
@@ -25,7 +27,10 @@ defmodule ExCypher.Props do
     args =
       props
       |> Enum.into([])
-      |> Enum.map(fn {name, value} -> ~s["#{name}":"#{value}"] end)
+      |> Enum.map(fn
+        {name, value} when is_binary(value) -> ~s["#{name}":"#{value}"]
+        {name, value} -> ~s["#{name}":#{value}]
+      end)
       |> Enum.join(",")
 
     " {#{args}}"
