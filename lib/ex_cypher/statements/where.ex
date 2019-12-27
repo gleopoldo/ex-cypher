@@ -16,7 +16,7 @@ defmodule ExCypher.Statements.Where do
   """
   @spec parse(ast :: term()) :: String.t()
   def parse({op, _, [first, last | []]})
-       when op in @logical_operators do
+      when op in @logical_operators do
     operator_name =
       op
       |> Atom.to_string()
