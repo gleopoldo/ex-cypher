@@ -24,9 +24,10 @@ defmodule ExCypher.Relationship do
       iex> rel([:Rel], %{year: 1980})
       "[:Rel {\"year\": 1980}]"
   """
+  def rel(), do: rel("")
 
   @spec rel(props :: map()) :: String.t()
-  def rel(props = %{}), do: rel("", [], props)
+  def rel(props = %{}), do: props |> stringify() |> to_rel()
 
   @spec rel(labels :: list(), props :: map()) :: String.t()
   def rel(labels, props = %{})
@@ -39,9 +40,14 @@ defmodule ExCypher.Relationship do
           props :: map()
         ) :: String.t()
   def rel(name, labels \\ [], props \\ %{}) do
-    ["[", name, labels, props, "]"]
+    [name, labels, props]
     |> Enum.map(&stringify/1)
     |> Enum.join()
+    |> to_rel()
+  end
+
+  def to_rel(string) do
+    "[" <> String.trim(string) <> "]"
   end
 
   @doc """
