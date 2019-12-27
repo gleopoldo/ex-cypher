@@ -130,7 +130,6 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.Query
   alias ExCypher.Statement
 
   @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
@@ -153,15 +152,12 @@ defmodule ExCypher do
 
   defmacro command(name, args \\ []) do
     quote do
-      put_buffer(var!(buffer, ExCypher), {unquote(name), unquote(args)})
+      put_buffer(var!(buffer, ExCypher), unquote(args))
     end
   end
 
   def parse({command, _ctx, args}) when command in @supported_statements do
-    params =
-      Enum.map(args, fn ast_node ->
-        Macro.to_string(ast_node, &Statement.parse(command, &1, &2))
-      end)
+    params = Statement.parse(command, args)
 
     quote do
       command(unquote(command), unquote(params))
@@ -178,7 +174,6 @@ defmodule ExCypher do
     buffer
     |> Agent.get(fn query -> query end)
     |> Enum.reverse()
-    |> Enum.map(&Query.parse/1)
     |> Enum.join(" ")
   end
 

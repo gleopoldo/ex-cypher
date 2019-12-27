@@ -9,15 +9,21 @@ defmodule ExCypher.Statements.Order do
     Provides support to `ASC` and `DESC` syntax in `ORDER BY`
     statements
   """
-  @spec parse(ast :: term(), str :: String.t()) :: String.t()
-  def parse({:{}, _ctx, [variable, ordering | []]}, _str) do
+  @spec parse(ast :: term()) :: String.t()
+  def parse({term, ordering}) when ordering in [:asc, :desc] do
     direction =
       ordering
       |> Generic.parse()
       |> String.upcase()
 
-    "#{Generic.parse(variable)} #{direction}"
+    "#{Generic.parse(term)} #{direction}"
   end
 
-  def parse(ast, str), do: Generic.parse(ast, str)
+  def parse(list) when is_list(list) do
+    list
+    |> Enum.map(&parse/1)
+    |> Enum.join(", ")
+  end
+
+  def parse(ast), do: Generic.parse(ast)
 end

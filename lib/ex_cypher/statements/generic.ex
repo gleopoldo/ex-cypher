@@ -22,36 +22,6 @@ defmodule ExCypher.Statements.Generic do
 
   alias ExCypher.{Node, Relationship}
 
-  @spec parse(ast :: term(), str :: String.t()) :: String.t()
-
-  # Removing parenthesis from statements that elixir
-  # attempts to resolve a name as a function.
-  def parse(ast = {{:., _, [_first, _last | []]}, _, _}, _str) do
-    parse(ast)
-  end
-
-  def parse(term = {:--, _ctx, _args}, _str), do: parse(term)
-
-  def parse(term = {:->, _ctx, _args}, _str), do: parse(term)
-
-  def parse(term = {:<-, _ctx, _args}, _str), do: parse(term)
-
-  def parse(term = {:node, _ctx, _args}, _str), do: parse(term)
-
-  def parse(term = {:rel, _ctx, _args}, _str), do: parse(term)
-
-  def parse(term = {:fragment, _ctx, _args}, _str), do: parse(term)
-
-  def parse(ast, _str) when is_atom(ast), do: Atom.to_string(ast)
-
-  def parse(list, _str) when is_list(list) do
-    list
-    |> Enum.map(&parse/1)
-    |> Enum.join("")
-  end
-
-  def parse(_ast, str), do: str
-
   @spec parse(ast :: term()) :: String.t()
 
   # Removing parenthesis from statements that elixir
@@ -91,28 +61,34 @@ defmodule ExCypher.Statements.Generic do
   end
 
   def parse({:--, _ctx, [from, to]}) do
-    from = parse(from, "")
-    to = parse(to, "")
+    from = parse(from)
+    to = parse(to)
 
     apply(Relationship, :assoc, [:--, {from, to}])
   end
 
   def parse({:->, _ctx, [from, to | []]}) do
-    from = parse(from, "")
-    to = parse(to, "")
+    from = parse(from)
+    to = parse(to)
 
     apply(Relationship, :assoc, [:->, {from, to}])
   end
 
   def parse({:<-, _ctx, [from, to | []]}) do
-    from = parse(from, "")
-    to = parse(to, "")
+    from = parse(from)
+    to = parse(to)
 
     apply(Relationship, :assoc, [:<-, {from, to}])
   end
 
   def parse(term) when is_atom(term),
     do: Atom.to_string(term)
+
+  def parse(list) when is_list(list) do
+    list
+    |> Enum.map(&parse/1)
+    |> Enum.join(", ")
+  end
 
   def parse(term), do: term |> Macro.to_string()
 end
