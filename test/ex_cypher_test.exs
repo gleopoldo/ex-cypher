@@ -37,7 +37,7 @@ defmodule ExCypherTest do
           match(node([:Node], %{name: "foo"}))
         end
 
-      assert ~S[MATCH (:Node {"name":"foo"})] = query
+      assert ~S[MATCH (:Node {name:"foo"})] = query
     end
 
     test "with a name and a multiple labels" do
@@ -55,7 +55,7 @@ defmodule ExCypherTest do
           match(node(:bob, [], %{name: "Bob"}))
         end
 
-      assert ~S[MATCH (bob {"name":"Bob"})] == query
+      assert ~S[MATCH (bob {name:"Bob"})] == query
     end
 
     test "with a name and lots of props" do
@@ -64,7 +64,7 @@ defmodule ExCypherTest do
           match(node(:rick, [], %{name: "Rick", role: "scientist"}))
         end
 
-      assert ~S[MATCH (rick {"name":"Rick","role":"scientist"})] == query
+      assert ~S[MATCH (rick {name:"Rick",role:"scientist"})] == query
     end
 
     test "with only props" do
@@ -73,7 +73,7 @@ defmodule ExCypherTest do
           match(node(%{name: "Rick", role: "scientist"}))
         end
 
-      assert ~S[MATCH ({"name":"Rick","role":"scientist"})] == query
+      assert ~S[MATCH ({name:"Rick",role:"scientist"})] == query
     end
   end
 
@@ -200,7 +200,7 @@ defmodule ExCypherTest do
     end
 
     test "accepts properties in relationships" do
-      expected = ~S[MATCH (a)-[:Rel {"name":"foo"}\]->(b)]
+      expected = ~S[MATCH (a)-[:Rel {name:"foo"}\]->(b)]
 
       query =
         cypher do
@@ -211,7 +211,7 @@ defmodule ExCypherTest do
     end
 
     test "accepts properties in named and labeled relationships" do
-      expected = ~S[MATCH (a)-[r:Rel {"name":"foo"}\]->(b)]
+      expected = ~S[MATCH (a)-[r:Rel {name:"foo"}\]->(b)]
 
       query =
         cypher do
@@ -339,7 +339,7 @@ defmodule ExCypherTest do
           create(node([:Node], %{name: "prop"}))
         end
 
-      assert ~S[CREATE (:Node {"name":"prop"})] = query
+      assert ~S[CREATE (:Node {name:"prop"})] = query
     end
 
     test "accepts multiple elements" do
@@ -368,7 +368,7 @@ defmodule ExCypherTest do
           merge(node([:Node], %{name: "prop"}))
         end
 
-      assert ~S[MERGE (:Node {"name":"prop"})] = query
+      assert ~S[MERGE (:Node {name:"prop"})] = query
     end
 
     test "accepts multiple elements" do

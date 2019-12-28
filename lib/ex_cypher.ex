@@ -27,7 +27,7 @@ defmodule ExCypher do
     iex> cypher do
     ...>   match(node(:p, [:Person], %{name: "bob"}))
     ...> end
-    ~S[MATCH (p:Person {"name":"bob"})]
+    ~S[MATCH (p:Person {name:"bob"})]
 
   ```
 
@@ -100,10 +100,10 @@ defmodule ExCypher do
 
   ```
     iex> cypher do
-    ...>   create node(:p, [:Player], %{nick: "like4boss", score: "100"})
+    ...>   create node(:p, [:Player], %{nick: "like4boss", score: 100})
     ...>   return p.name
     ...> end
-    ~S[CREATE (p:Player {"nick":"like4boss","score":"100"}) RETURN p.name]
+    ~S[CREATE (p:Player {nick:"like4boss",score:100}) RETURN p.name]
 
   ```
 
@@ -116,7 +116,7 @@ defmodule ExCypher do
     ...>   merge node(:p2, [:Player], %{nick: "marioboss"})
     ...>   return p.name
     ...> end
-    ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) RETURN p.name|
+    ~S|MERGE (p:Player {nick:"like4boss"}) MERGE (p2:Player {nick:"marioboss"}) RETURN p.name|
 
     iex> cypher do
     ...>   merge node(:p, [:Player], %{nick: "like4boss"})
@@ -124,7 +124,7 @@ defmodule ExCypher do
     ...>   merge (node(:p) -- rel([:IN_LOBBY]) -> node(:p2))
     ...>   return p.name
     ...> end
-    ~S|MERGE (p:Player {"nick":"like4boss"}) MERGE (p2:Player {"nick":"marioboss"}) MERGE (p)-[:IN_LOBBY]->(p2) RETURN p.name|
+    ~S|MERGE (p:Player {nick:"like4boss"}) MERGE (p2:Player {nick:"marioboss"}) MERGE (p)-[:IN_LOBBY]->(p2) RETURN p.name|
 
   ```
 

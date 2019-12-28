@@ -28,8 +28,8 @@ defmodule ExCypher.Props do
       props
       |> Enum.into([])
       |> Enum.map(fn
-        {name, value} when is_binary(value) -> ~s["#{name}":"#{value}"]
-        {name, value} -> ~s["#{name}":#{value}]
+        {name, value} when is_binary(value) -> ~s[#{name}:"#{value}"]
+        {name, value} -> ~s[#{name}:#{value}]
       end)
       |> Enum.join(",")
 
