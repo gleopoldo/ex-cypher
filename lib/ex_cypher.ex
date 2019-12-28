@@ -161,25 +161,21 @@ defmodule ExCypher do
     end
   end
 
-  @doc """
-    Saves a query line into the query buffer (where the other query lines)
-    are being kept isolated.
+  # Saves a query line into the query buffer (where the other query lines)
+  # are being kept isolated.
 
-    Since those query lines break with elixir's language syntax, we cannot
-    call `unquote` on them, thus making the macro approach necessary.
+  # Since those query lines break with elixir's language syntax, we cannot
+  # call `unquote` on them, thus making the macro approach necessary.
 
-    Also, `buffer` pid is on another scope, and cannot be accessed directly
-    by the `parse` function.
-  """
+  # Also, `buffer` pid is on another scope, and cannot be accessed directly
+  # by the `parse` function.
   defmacro command(args) do
     quote do
       Buffer.put_buffer(var!(buffer, ExCypher), unquote(args))
     end
   end
 
-  @doc """
-    Parses each command-line from the `cypher` macro's block
-  """
+  # Parses each command-line from the `cypher` macro's block
   def parse({command, _ctx, args}) when command in @supported_statements do
     params = Statement.parse(command, args)
 

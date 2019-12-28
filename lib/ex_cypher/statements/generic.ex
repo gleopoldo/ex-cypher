@@ -1,24 +1,24 @@
 defmodule ExCypher.Statements.Generic do
-  @moduledoc """
-    This module will provide the most generic AST conversion
-    functions that'll be shared between different commands.
+  @moduledoc false
 
-    Of course, such abstraction won't be possible to match
-    all kinds of statements, because some cypher commands
-    like the `WHERE` statement, have a unique syntax that is
-    very different from simpler ones, like the `RETURN`
-    statement.
+  # This module will provide the most generic AST conversion
+  # functions that'll be shared between different commands.
 
-    The intent, in this way, is to combine functions in a
-    specialization way. Outer modules attempt to filter and
-    process their specific syntaxes and, whenever they can't,
-    use this module as a last attempt to convert those AST
-    nodes.
+  # Of course, such abstraction won't be possible to match
+  # all kinds of statements, because some cypher commands
+  # like the `WHERE` statement, have a unique syntax that is
+  # very different from simpler ones, like the `RETURN`
+  # statement.
 
-    This way the core logic, which can include the caveat arround
-    elixir's function identification on unknown names, for example,
-    can be shared with other modules
-  """
+  # The intent, in this way, is to combine functions in a
+  # specialization way. Outer modules attempt to filter and
+  # process their specific syntaxes and, whenever they can't,
+  # use this module as a last attempt to convert those AST
+  # nodes.
+
+  # This way the core logic, which can include the caveat arround
+  # elixir's function identification on unknown names, for example,
+  # can be shared with other modules
 
   alias ExCypher.{Node, Relationship}
 
