@@ -25,10 +25,7 @@ defmodule ExCypher.Buffer do
 
   @spec generate_query(buffer :: pid()) :: String.t()
   def generate_query(buffer) do
-    buffer
-    |> Agent.get(fn query -> query end)
-    |> Enum.reverse()
-    |> Enum.join(" ")
+    Agent.get(buffer, fn query -> query end)
   end
 
   @spec stop_buffer(buffer :: pid()) :: :ok | {:error, term()}

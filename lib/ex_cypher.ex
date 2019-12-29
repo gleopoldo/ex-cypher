@@ -149,40 +149,29 @@ defmodule ExCypher do
     Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
-    quote do
-      {:ok, var!(buffer, ExCypher)} = Buffer.new_query()
-
-      unquote(Macro.prewalk(block, &parse/1))
-
-      query = Buffer.generate_query(var!(buffer, ExCypher))
-      Buffer.stop_buffer(var!(buffer, ExCypher))
-
-      query
-    end
+    cypher_query(block)
   end
 
-  # Saves a query line into the query buffer (where the other query lines)
-  # are being kept isolated.
+  defp cypher_query(block) do
+    {:ok, pid} = Buffer.new_query()
 
-  # Since those query lines break with elixir's language syntax, we cannot
-  # call `unquote` on them, thus making the macro approach necessary.
+    Macro.prewalk(block, fn
+      {command, _ctx, args} when command in @supported_statements ->
+        params = Statement.parse(command, args)
+        Buffer.put_buffer(pid, params)
 
-  # Also, `buffer` pid is on another scope, and cannot be accessed directly
-  # by the `parse` function.
-  defmacro command(args) do
-    quote do
-      Buffer.put_buffer(var!(buffer, ExCypher), unquote(args))
-    end
+      term ->
+        term
+    end)
+
+    query =
+      pid
+      |> Buffer.generate_query()
+      |> Enum.reverse()
+      |> Enum.join(" ")
+
+    Buffer.stop_buffer(pid)
+
+    quote do: unquote(query)
   end
-
-  # Parses each command-line from the `cypher` macro's block
-  def parse({command, _ctx, args}) when command in @supported_statements do
-    params = Statement.parse(command, args)
-
-    quote do
-      command(unquote(params))
-    end
-  end
-
-  def parse(stmt), do: stmt
 end
