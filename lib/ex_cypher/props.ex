@@ -1,13 +1,13 @@
 defmodule ExCypher.Props do
-  @moduledoc """
-  Maps and lists doesn't implement the String.Chars protocol,
-  and they'll need also some parsing so that they're compliant
-  with the cypher syntax.
+  @moduledoc false
 
-  This module provides a way to help converting those contents
-  into a cypher-compliant strings that can be used to build
-  both nodes and relationships arguments.
-  """
+  # Maps and lists doesn't implement the String.Chars protocol,
+  # and they'll need also some parsing so that they're compliant
+  # with the cypher syntax.
+
+  # This module provides a way to help converting those contents
+  # into a cypher-compliant strings that can be used to build
+  # both nodes and relationships arguments.
 
   def stringify(nil), do: ""
 
@@ -28,8 +28,8 @@ defmodule ExCypher.Props do
       props
       |> Enum.into([])
       |> Enum.map(fn
-        {name, value} when is_binary(value) -> ~s["#{name}":"#{value}"]
-        {name, value} -> ~s["#{name}":#{value}]
+        {name, value} when is_binary(value) -> ~s[#{name}:"#{value}"]
+        {name, value} -> ~s[#{name}:#{value}]
       end)
       |> Enum.join(",")
 

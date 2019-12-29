@@ -1,6 +1,6 @@
 defmodule ExCypher.Node do
   @moduledoc """
-  CYPHER node statements
+  Builds nodes using cypher syntax
 
   It can be used in order to build more complex queries involving your
   graph nodes.
@@ -11,24 +11,26 @@ defmodule ExCypher.Node do
   @doc """
   Returns the CYPHER's syntax to a node element.
 
-  ### Example:
+  ### Examples:
 
+      iex> node()
+      "()"
 
-  * Building an empty node:
-    iex> node()
-    "()"
+      iex> node(%{name: "bob"})
+      "({\"name\": \"bob\"})"
 
-  * Building an node with only props:
-    iex> node(%{name: "bob"})
-    "({\"name\": \"bob\"})"
+      iex> node([:Person])
+      "(:Person)"
 
-  * Building a labeled node:
-    iex> node(:a, [:Node])
-    "(a:Node)"
+      iex> node([:Person], %{name: "Amelia"})
+      "(:Person {name: \"Amelia\"})"
 
-  * Building a more complex node (with props and labels):
-    iex> node(:a, [:Node], %{name: "mark", age: 27})
-    "(a:Node {\"name\": \"mark\", \"age\": 27)"
+      iex> node(:a, [:Node])
+      "(a:Node)"
+
+      iex> node(:a, [:Node], %{name: "mark", age: 27})
+      "(a:Node {\"name\": \"mark\", \"age\": 27)"
+
   """
   @spec node() :: String.t()
   def node, do: to_node("")

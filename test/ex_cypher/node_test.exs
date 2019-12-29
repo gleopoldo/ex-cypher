@@ -20,15 +20,15 @@ defmodule ExCypher.NodeTest do
     end
 
     test "returns a node with props" do
-      assert ~S|({"name":"mark"})| = node(%{name: "mark"})
+      assert ~S|({name:"mark"})| = node(%{name: "mark"})
     end
 
     test "does not convert integers to strings in props" do
-      assert ~S|({"age":65})| = node(%{age: 65})
+      assert "({age:65})" = node(%{age: 65})
     end
 
     test "does not convert booleans to strings in props" do
-      assert ~S|({"married":true})| = node(%{married: true})
+      assert ~S|({married:true})| = node(%{married: true})
     end
 
     test "returns empty parenthesis when name is nil" do
@@ -50,11 +50,11 @@ defmodule ExCypher.NodeTest do
     end
 
     test "returns a labeled node with props" do
-      assert "(:Person {\"name\":\"billy\"})" = node([:Person], %{name: "billy"})
+      assert "(:Person {name:\"billy\"})" = node([:Person], %{name: "billy"})
     end
 
     test "returns a named node with props" do
-      assert "(p {\"name\":\"billy\"})" = node(:p, %{name: "billy"})
+      assert "(p {name:\"billy\"})" = node(:p, %{name: "billy"})
     end
 
     test "omits the name when it's nil but have labels" do
@@ -76,12 +76,12 @@ defmodule ExCypher.NodeTest do
 
   describe "node/3" do
     test "returns a complete node" do
-      assert ~S|(p:Person {"name":"ellie"})| =
+      assert ~S|(p:Person {name:"ellie"})| =
         node(:p, [:Person], %{name: "ellie"})
     end
 
     test "returns a node with multiple props" do
-      assert ~S|(p:Person {"first_name":"jane","last_name":"doe"})| =
+      assert ~S|(p:Person {first_name:"jane",last_name:"doe"})| =
         node(:p, [:Person], %{first_name: "jane", last_name: "doe"})
     end
   end

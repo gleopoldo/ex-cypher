@@ -1,6 +1,6 @@
 defmodule ExCypher.Relationship do
   @moduledoc """
-  Mounts Cypher syntax-compliant relationships between nodes.
+  Builds relationships using cypher syntax
   """
   import ExCypher.Props, only: [stringify: 1]
 
@@ -8,22 +8,30 @@ defmodule ExCypher.Relationship do
   @typep node_or_relationship :: String.t()
 
   @doc """
-  Builds Cypher relationship structure given a set of parameters
+  Returns the Cypher's syntax for a relationship:
 
   ### Usage:
 
-  * Building a relationship with params:
+      iex> rel()
+      "[]"
+
       iex> rel(%{year: 1980})
       "[{\"year\": 1980}]"
 
-  * Building a named relationship:
+      iex> rel([:WORKS_IN])
+      "[:WORKS_IN]"
+
       iex> rel(:r, %{year: 1980})
       "[r {\"year\": 1980}]"
 
-  * Building a labeled relationship:
       iex> rel([:Rel], %{year: 1980})
       "[:Rel {\"year\": 1980}]"
+
+      iex> rel(:r, [:Rel], %{year: 1980})
+      "[r:Rel {\"year\": 1980}]"
   """
+
+  @spec rel() :: String.t()
   def rel(), do: rel("")
 
   @spec rel(props :: map()) :: String.t()
