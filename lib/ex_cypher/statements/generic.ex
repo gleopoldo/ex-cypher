@@ -27,7 +27,8 @@ defmodule ExCypher.Statements.Generic do
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse({{:., _, [first, last | []]}, _, _}) do
-    "#{parse(first)}.#{parse(last)}"
+    {term, _, _} = first
+    "#{Atom.to_string(term)}.#{parse(last)}"
   end
 
   # Injects raw cypher functions
@@ -79,6 +80,10 @@ defmodule ExCypher.Statements.Generic do
     to = parse(to)
 
     apply(Relationship, :assoc, [:<-, {from, to}])
+  end
+
+  def parse({term, _ctx, nil}) when is_atom(term) do
+    term
   end
 
   def parse(term) when is_atom(term),

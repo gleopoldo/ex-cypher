@@ -141,23 +141,26 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.{Buffer, Statement}
-
-  @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
+  alias ExCypher.{Buffer, Clause, Statement}
+  import ExCypher.Clause, only: [is_supported: 1]
 
   @doc """
     Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
-    cypher_query(block)
+    cypher_query(block, __CALLER__)
   end
 
-  defp cypher_query(block) do
+  defp cypher_query(block, env) do
     {:ok, pid} = Buffer.new_query()
 
     Macro.prewalk(block, fn
-      {command, _ctx, args} when command in @supported_statements ->
-        params = Statement.parse(command, args)
+      term = {command, _ctx, _args} when is_supported(command) ->
+        params =
+          term
+          |> Clause.new(env)
+          |> Statement.parse()
+
         Buffer.put_buffer(pid, params)
 
       term ->
@@ -172,6 +175,6 @@ defmodule ExCypher do
 
     Buffer.stop_buffer(pid)
 
-    quote do: unquote(query)
+    query
   end
 end
