@@ -82,8 +82,8 @@ defmodule ExCypher.Statements.Generic do
     apply(Relationship, :assoc, [:<-, {from, to}])
   end
 
-  def parse({term, _ctx, nil}) when is_atom(term) do
-    term
+  def parse(args = {term, _ctx, nil}) when is_atom(term) do
+    quote do: "\"#{unquote(args)}\""
   end
 
   def parse(term) when is_atom(term),

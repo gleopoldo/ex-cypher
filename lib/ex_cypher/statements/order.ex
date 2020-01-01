@@ -13,13 +13,13 @@ defmodule ExCypher.Statements.Order do
       |> Generic.parse()
       |> String.upcase()
 
-    "#{Generic.parse(term)} #{direction}"
+    [Generic.parse(term), direction]
   end
 
   def parse(list) when is_list(list) do
     list
     |> Enum.map(&parse/1)
-    |> Enum.join(", ")
+    |> Enum.intersperse(",")
   end
 
   def parse(ast), do: Generic.parse(ast)

@@ -17,13 +17,11 @@ defmodule ExCypher.Statements.Where do
       |> Atom.to_string()
       |> String.upcase()
 
-    "#{parse(first)} #{operator_name} #{parse(last)}"
+    [parse(first), operator_name, parse(last)]
   end
 
   def parse(list) when is_list(list) do
-    list
-    |> Enum.map(&parse/1)
-    |> Enum.join(", ")
+    Enum.map(list, &parse/1)
   end
 
   def parse(ast) do
