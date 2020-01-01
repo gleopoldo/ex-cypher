@@ -32,7 +32,7 @@ defmodule ExCypher.Relationship do
   """
 
   @spec rel() :: String.t()
-  def rel(), do: rel("")
+  def rel, do: rel("")
 
   @spec rel(props :: map()) :: String.t()
   def rel(props = %{}), do: props |> stringify() |> to_rel()

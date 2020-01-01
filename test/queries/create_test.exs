@@ -25,7 +25,7 @@ defmodule Queries.CreateTest do
     test "accepts relationships" do
       query =
         cypher do
-          create (node(:a) -- rel([:R]) -> node(:b))
+          create((node(:a) -- rel([:R]) -> node(:b)))
         end
 
       assert "CREATE (a)-[:R]->(b)" = query

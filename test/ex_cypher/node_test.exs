@@ -76,13 +76,12 @@ defmodule ExCypher.NodeTest do
 
   describe "node/3" do
     test "returns a complete node" do
-      assert ~S|(p:Person {name:"ellie"})| =
-        node(:p, [:Person], %{name: "ellie"})
+      assert ~S|(p:Person {name:"ellie"})| = node(:p, [:Person], %{name: "ellie"})
     end
 
     test "returns a node with multiple props" do
       assert ~S|(p:Person {first_name:"jane",last_name:"doe"})| =
-        node(:p, [:Person], %{first_name: "jane", last_name: "doe"})
+               node(:p, [:Person], %{first_name: "jane", last_name: "doe"})
     end
   end
 end

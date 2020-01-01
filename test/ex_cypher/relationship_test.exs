@@ -75,13 +75,12 @@ defmodule ExCypher.RelationshipTest do
 
   describe "rel/3" do
     test "returns a complete rel" do
-      assert ~S|[p:Person {name:"ellie"}]| =
-        rel(:p, [:Person], %{name: "ellie"})
+      assert ~S|[p:Person {name:"ellie"}]| = rel(:p, [:Person], %{name: "ellie"})
     end
 
     test "returns a rel with multiple props" do
       assert ~S|[p:Person {first_name:"jane",last_name:"doe"}]| =
-        rel(:p, [:Person], %{first_name: "jane", last_name: "doe"})
+               rel(:p, [:Person], %{first_name: "jane", last_name: "doe"})
     end
   end
 end

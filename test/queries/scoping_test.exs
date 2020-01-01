@@ -8,11 +8,12 @@ defmodule Queries.ScopingTest do
       expected = ~S[MATCH (p:Person) WHERE p.name = "sarah" RETURN p]
 
       name = "sarah"
+
       query =
         cypher do
-          match node(:p, [:Person])
-          where p.name = name
-          return :p
+          match(node(:p, [:Person]))
+          where(p.name = name)
+          return(:p)
         end
 
       assert expected == query
