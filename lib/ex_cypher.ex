@@ -81,7 +81,7 @@ defmodule ExCypher do
 
       iex> cypher do
       ...>   create (node(:c, [:Country], %{name: "Brazil"}) -- rel([:HAS_CITY]) -> node([:City], %{name: "São Paulo"}))
-      ...>   return c
+      ...>   return :c
       ...> end
       ~S|CREATE (c:Country {name:"Brazil"})-[:HAS_CITY]->(:City {name:"São Paulo"}) RETURN c|
 
@@ -154,27 +154,33 @@ defmodule ExCypher do
   defp cypher_query(block, env) do
     {:ok, pid} = Buffer.new_query()
 
-    Macro.prewalk(block, fn
+    Macro.postwalk(block, fn
       term = {command, _ctx, _args} when is_supported(command) ->
-        params =
-          term
-          |> Clause.new(env)
-          |> Statement.parse()
-
-        Buffer.put_buffer(pid, params)
+        parse_term(pid, term, env)
 
       term ->
         term
     end)
 
-    query =
-      pid
-      |> Buffer.generate_query()
-      |> Enum.reverse()
-      |> Enum.join(" ")
+    query = Buffer.generate_query(pid)
 
     Buffer.stop_buffer(pid)
 
-    query
+    quote do
+      unquote(query)
+      |> Enum.reverse()
+      |> List.flatten()
+      |> Enum.join(" ")
+      |> String.replace(" , ", ", ")
+    end
+  end
+
+  defp parse_term(pid, term, env) do
+    params =
+      term
+      |> Clause.new(env)
+      |> Statement.parse()
+
+    Buffer.put_buffer(pid, params)
   end
 end
