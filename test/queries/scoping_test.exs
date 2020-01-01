@@ -12,7 +12,7 @@ defmodule Queries.ScopingTest do
         cypher do
           match node(:p, [:Person])
           where p.name = name
-          return p
+          return :p
         end
 
       assert expected == query
