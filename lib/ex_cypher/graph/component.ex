@@ -1,4 +1,4 @@
-defmodule ExCypher.Props do
+defmodule ExCypher.Graph.Props do
   @moduledoc false
 
   # Maps and lists doesn't implement the String.Chars protocol,
@@ -8,22 +8,29 @@ defmodule ExCypher.Props do
   # This module provides a way to help converting those contents
   # into a cypher-compliant strings that can be used to build
   # both nodes and relationships arguments.
+  def escape_node(node_name \\ "", node_labels \\ [], node_props \\ %{}) do
+    [escape(node_name), escape(node_labels), escape(node_props)]
+  end
 
-  def stringify(nil), do: ""
+  def escape_relation(rel_name \\ "", rel_labels \\ [], rel_props \\ %{}) do
+    [escape(rel_name), escape(rel_labels), escape(rel_props)]
+  end
 
-  def stringify(element)
+  def escape(nil), do: ""
+
+  def escape(element)
       when is_atom(element),
       do: Atom.to_string(element)
 
-  def stringify([]), do: ""
+  def escape([]), do: ""
 
-  def stringify(props) when props == %{}, do: ""
+  def escape(props) when props == %{}, do: ""
 
-  def stringify(list)
+  def escape(list)
       when is_list(list),
       do: ":#{Enum.join(list, ",")}"
 
-  def stringify(props = %{}) do
+  def escape(props = %{}) do
     args =
       props
       |> Enum.into([])
@@ -36,5 +43,5 @@ defmodule ExCypher.Props do
     " {#{args}}"
   end
 
-  def stringify(str), do: str
+  def escape(str), do: str
 end

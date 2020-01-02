@@ -2,7 +2,7 @@ defmodule ExCypher.NodeTest do
   use ExUnit.Case
 
   import Kernel, except: [node: 0, node: 1]
-  import ExCypher.Node
+  import ExCypher.Graph.Node
 
   describe "node/0" do
     test "returns empty parenthesis" do

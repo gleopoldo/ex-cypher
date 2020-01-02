@@ -1,7 +1,7 @@
 defmodule ExCypher.RelationshipTest do
   use ExUnit.Case
 
-  import ExCypher.Relationship
+  import ExCypher.Graph.Relationship
 
   describe "rel/0" do
     test "returns empty parenthesis" do

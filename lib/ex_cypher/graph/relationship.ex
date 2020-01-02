@@ -1,8 +1,8 @@
-defmodule ExCypher.Relationship do
+defmodule ExCypher.Graph.Relationship do
   @moduledoc """
   Builds relationships using cypher syntax
   """
-  import ExCypher.Props, only: [stringify: 1]
+  import ExCypher.Graph.Props, only: [escape_relation: 3]
 
   @typep assoc_direction :: :-- | :-> | :<-
   @typep node_or_relationship ::
@@ -36,7 +36,7 @@ defmodule ExCypher.Relationship do
   def rel, do: rel("")
 
   @spec rel(props :: map()) :: String.t()
-  def rel(props = %{}), do: props |> stringify() |> to_rel()
+  def rel(props = %{}), do: rel(nil, nil, props)
 
   @spec rel(labels :: list(), props :: map()) :: String.t()
   def rel(labels, props = %{})
@@ -49,8 +49,7 @@ defmodule ExCypher.Relationship do
           props :: map()
         ) :: String.t()
   def rel(name, labels \\ [], props \\ %{}) do
-    [name, labels, props]
-    |> Enum.map(&stringify/1)
+    escape_relation(name, labels, props)
     |> Enum.join()
     |> to_rel()
   end
