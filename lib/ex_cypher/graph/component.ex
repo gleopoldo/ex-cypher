@@ -1,5 +1,9 @@
-defmodule ExCypher.Graph.Props do
+defmodule ExCypher.Graph.Component do
   @moduledoc false
+
+  def wrap(str, :node), do: "(" <> str <> ")"
+
+  def wrap(str, :relation), do: "[" <> str <> "]"
 
   # Maps and lists doesn't implement the String.Chars protocol,
   # and they'll need also some parsing so that they're compliant
@@ -28,19 +32,19 @@ defmodule ExCypher.Graph.Props do
 
   def escape(list)
       when is_list(list),
-      do: ":#{Enum.join(list, ",")}"
+      do: [":" | Enum.intersperse(list, ",")]
 
   def escape(props = %{}) do
     args =
       props
       |> Enum.into([])
       |> Enum.map(fn
-        {name, value} when is_binary(value) -> ~s[#{name}:"#{value}"]
-        {name, value} -> ~s[#{name}:#{value}]
+        {name, value} when is_binary(value) -> [name, ":", "\"#{value}\""]
+        {name, value} -> [name, ":", value]
       end)
-      |> Enum.join(",")
+      |> Enum.intersperse(",")
 
-    " {#{args}}"
+    [" {", args, "}"]
   end
 
   def escape(str), do: str

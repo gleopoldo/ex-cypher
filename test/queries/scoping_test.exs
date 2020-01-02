@@ -10,9 +10,9 @@ defmodule Queries.ScopingTest do
 
       query =
         cypher do
-          match node(:p, [:Person])
-          return :p
-          limit per
+          match(node(:p, [:Person]))
+          return(:p)
+          limit(per)
         end
 
       assert expected == query

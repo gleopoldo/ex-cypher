@@ -6,7 +6,7 @@ defmodule ExCypher.Graph.Node do
   graph nodes.
   """
 
-  import ExCypher.Graph.Props, only: [escape_node: 3]
+  alias ExCypher.Graph.Component
 
   @doc """
   Returns the CYPHER's syntax to a node element.
@@ -33,7 +33,7 @@ defmodule ExCypher.Graph.Node do
 
   """
   @spec node() :: String.t()
-  def node, do: to_node("")
+  def node, do: node(nil, nil, nil)
 
   @spec node(props :: map()) :: String.t()
   def node(props = %{}), do: node(nil, nil, props)
@@ -44,13 +44,16 @@ defmodule ExCypher.Graph.Node do
           props :: map()
         ) :: String.t()
   def node(name, labels \\ [], props \\ %{}) do
-    escape_node(name, labels, props)
-    |> Enum.join("")
-    |> to_node()
+    Component.escape_node(name, labels, props) |> to_node()
   end
 
-  defp to_node(inner) when is_binary(inner) do
-    inner = String.trim(inner)
-    "(#{inner})"
+  defp to_node(inner) do
+    quote do
+      unquote(inner)
+      |> List.flatten()
+      |> Enum.join()
+      |> String.trim()
+      |> Component.wrap(:node)
+    end
   end
 end

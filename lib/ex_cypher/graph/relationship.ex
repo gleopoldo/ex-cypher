@@ -2,11 +2,11 @@ defmodule ExCypher.Graph.Relationship do
   @moduledoc """
   Builds relationships using cypher syntax
   """
-  import ExCypher.Graph.Props, only: [escape_relation: 3]
+  alias ExCypher.Graph.Component
 
   @typep assoc_direction :: :-- | :-> | :<-
   @typep node_or_relationship ::
-    {type :: :node | :relationship, node :: String.t()}
+           {type :: :node | :relationship, node :: String.t()}
 
   @doc """
   Returns the Cypher's syntax for a relationship:
@@ -49,13 +49,17 @@ defmodule ExCypher.Graph.Relationship do
           props :: map()
         ) :: String.t()
   def rel(name, labels \\ [], props \\ %{}) do
-    escape_relation(name, labels, props)
-    |> Enum.join()
-    |> to_rel()
+    Component.escape_relation(name, labels, props) |> to_rel()
   end
 
-  def to_rel(string) do
-    "[" <> String.trim(string) <> "]"
+  def to_rel(relation) do
+    quote do
+      unquote(relation)
+      |> List.flatten()
+      |> Enum.join()
+      |> String.trim()
+      |> Component.wrap(:relation)
+    end
   end
 
   @doc """
@@ -68,7 +72,11 @@ defmodule ExCypher.Graph.Relationship do
   def assoc(assoc_type, {{from_type, from}, {to_type, to}}) do
     assoc_symbol = assoc_string(assoc_type, from_type, to_type)
 
-    Enum.join([from, assoc_symbol, to], "")
+    quote do
+      [unquote(from), unquote(assoc_symbol), unquote(to)]
+      |> List.flatten()
+      |> Enum.join()
+    end
   end
 
   defp any_rel?(from_type, to_type) do
