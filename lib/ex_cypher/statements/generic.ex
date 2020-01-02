@@ -82,17 +82,22 @@ defmodule ExCypher.Statements.Generic do
     apply(Relationship, :assoc, [:<-, {from, to}])
   end
 
-  def parse(args = {term, _ctx, nil}) when is_atom(term) do
-    quote do: "\"#{unquote(args)}\""
-  end
-
   def parse(term) when is_atom(term),
     do: Atom.to_string(term)
 
   def parse(list) when is_list(list) do
     list
     |> Enum.map(&parse/1)
-    |> Enum.join(", ")
+    |> Enum.intersperse(",")
+  end
+
+  def parse(term = {var_name, _ctx, nil}) when is_atom(var_name) do
+    quote bind_quoted: [term: term] do
+      case term do
+        term when is_binary(term) -> "\"#{term}\""
+        term -> term
+      end
+    end
   end
 
   def parse(term), do: term |> Macro.to_string()
