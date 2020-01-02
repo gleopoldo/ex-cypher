@@ -66,31 +66,24 @@ defmodule ExCypher.Relationship do
           direction :: assoc_direction,
           {from :: node_or_relationship, to :: node_or_relationship}
         ) :: String.t()
-  def assoc(:--, {{from_type, from}, {to_type, to}}) do
-    if any_rel?(from_type, to_type) do
-      "#{from}-#{to}"
-    else
-      "#{from}--#{to}"
-    end
-  end
+  def assoc(assoc_type, {{from_type, from}, {to_type, to}}) do
+    assoc_symbol = assoc_string(assoc_type, from_type, to_type)
 
-  def assoc(:->, {{from_type, from}, {to_type, to}}) do
-    if any_rel?(from_type, to_type) do
-      "#{from}->#{to}"
-    else
-      "#{from}-->#{to}"
-    end
-  end
-
-  def assoc(:<-, {{from_type, from}, {to_type, to}}) do
-    if any_rel?(from_type, to_type) do
-      "#{from}<-#{to}"
-    else
-      "#{from}<--#{to}"
-    end
+    Enum.join([from, assoc_symbol, to], "")
   end
 
   defp any_rel?(from_type, to_type) do
     from_type == :relationship || to_type == :relationship
+  end
+
+  defp assoc_string(assoc_type, from_type, to_type) do
+    case {assoc_type, any_rel?(from_type, to_type)} do
+      {:--, false} -> "--"
+      {:--, true} -> "-"
+      {:<-, false} -> "<--"
+      {:<-, true} -> "<-"
+      {:->, false} -> "-->"
+      {:->, true} -> "->"
+    end
   end
 end
