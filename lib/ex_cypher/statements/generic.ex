@@ -61,25 +61,13 @@ defmodule ExCypher.Statements.Generic do
     apply(Relationship, :rel, args)
   end
 
-  def parse({:--, _ctx, [from, to]}) do
+  def parse({association, _ctx, [from, to]})
+      when association in [:--, :->, :<-] do
+
     from = parse(from)
     to = parse(to)
 
-    apply(Relationship, :assoc, [:--, {from, to}])
-  end
-
-  def parse({:->, _ctx, [from, to | []]}) do
-    from = parse(from)
-    to = parse(to)
-
-    apply(Relationship, :assoc, [:->, {from, to}])
-  end
-
-  def parse({:<-, _ctx, [from, to | []]}) do
-    from = parse(from)
-    to = parse(to)
-
-    apply(Relationship, :assoc, [:<-, {from, to}])
+    apply(Relationship, :assoc, [association, {from, to}])
   end
 
   def parse(term) when is_atom(term),
