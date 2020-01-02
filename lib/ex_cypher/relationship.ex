@@ -5,7 +5,8 @@ defmodule ExCypher.Relationship do
   import ExCypher.Props, only: [stringify: 1]
 
   @typep assoc_direction :: :-- | :-> | :<-
-  @typep node_or_relationship :: String.t()
+  @typep node_or_relationship ::
+    {type :: :node | :relationship, node :: String.t()}
 
   @doc """
   Returns the Cypher's syntax for a relationship:
@@ -65,39 +66,31 @@ defmodule ExCypher.Relationship do
           direction :: assoc_direction,
           {from :: node_or_relationship, to :: node_or_relationship}
         ) :: String.t()
-  def assoc(:--, {from, to}) do
-    if any_rel?(from, to) do
+  def assoc(:--, {{from_type, from}, {to_type, to}}) do
+    if any_rel?(from_type, to_type) do
       "#{from}-#{to}"
     else
       "#{from}--#{to}"
     end
   end
 
-  def assoc(:->, {from, to}) do
-    if any_rel?(from, to) do
+  def assoc(:->, {{from_type, from}, {to_type, to}}) do
+    if any_rel?(from_type, to_type) do
       "#{from}->#{to}"
     else
       "#{from}-->#{to}"
     end
   end
 
-  def assoc(:<-, {from, to}) do
-    if any_rel?(from, to) do
+  def assoc(:<-, {{from_type, from}, {to_type, to}}) do
+    if any_rel?(from_type, to_type) do
       "#{from}<-#{to}"
     else
       "#{from}<--#{to}"
     end
   end
 
-  defp any_rel?(from, to) do
-    named_rel?(from) || named_rel?(to)
-  end
-
-  defp named_rel?(stmt) when is_list(stmt) do
-    stmt |> Enum.join("") |> named_rel?()
-  end
-
-  defp named_rel?(stmt) do
-    String.starts_with?(stmt, "[") || String.ends_with?(stmt, "]")
+  defp any_rel?(from_type, to_type) do
+    from_type == :relationship || to_type == :relationship
   end
 end
