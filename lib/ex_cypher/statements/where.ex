@@ -6,7 +6,7 @@ defmodule ExCypher.Statements.Where do
 
   alias ExCypher.Statements.Generic
 
-  @logical_operators [:and, :or, :==]
+  @logical_operators [:and, :or, :==, :!=, :>, :<, :>=, :<=]
 
   @doc false
   @spec parse(ast :: term()) :: String.t()
@@ -26,10 +26,18 @@ defmodule ExCypher.Statements.Where do
   end
 
   defp fetch_operator(operator) do
-    Map.get(%{
+    # operators that have a different syntax in cypher
+    operators_dict = %{
       :== => "=",
       :and => "AND",
-      :or => "OR"
-    }, operator)
+      :or => "OR",
+      :!= => "<>",
+    }
+
+    if (string = Map.get(operators_dict, operator)) do
+      string
+    else
+      Atom.to_string(operator)
+    end
   end
 end
