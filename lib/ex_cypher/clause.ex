@@ -3,13 +3,12 @@ defmodule ExCypher.Clause do
   Abstraction on query clauses and their arguments
   """
 
-  defstruct [:name, :env, :args]
+  defstruct [:name, :args]
 
   alias __MODULE__
 
   @type t() :: %__MODULE__{
           name: String.t(),
-          env: Macro.Env.t(),
           args: [term()]
         }
 
@@ -18,10 +17,9 @@ defmodule ExCypher.Clause do
   defguard is_supported(command_name)
            when command_name in @supported_statements
 
-  def new({name, _ctx, args}, env)
-      when is_supported(name),
-      do: %Clause{name: name, env: env, args: args}
+  @spec new({name :: atom(), context :: list(), args :: term()}) :: Clause.t()
+  def new({name, _ctx, args}) when is_supported(name),
+      do: %Clause{name: name, args: args}
 
-  def new(term, env),
-    do: %Clause{name: nil, env: env, args: term}
+  def new(term), do: %Clause{name: nil, args: term}
 end

@@ -6,17 +6,15 @@ defmodule ExCypher.ClauseTest do
 
   describe ".new/2" do
     test "builds a new clause with given args" do
-      env = __ENV__
       term = {:command_name, [], [arg1: 1, arg2: 2]}
 
-      assert %Clause{name: nil, env: ^env, args: ^term} = Clause.new(term, env)
+      assert %Clause{name: nil, args: ^term} = Clause.new(term)
     end
 
     test "splits the command name when its supported by framework" do
-      env = __ENV__
       term = {name, _ctx, args} = {:match, [], [arg1: 1, arg2: 2]}
 
-      assert %Clause{name: ^name, env: ^env, args: ^args} = Clause.new(term, env)
+      assert %Clause{name: ^name, args: ^args} = Clause.new(term)
     end
   end
 
