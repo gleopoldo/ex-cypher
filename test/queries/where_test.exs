@@ -34,4 +34,51 @@ defmodule Queries.WhereTest do
       assert "MATCH (a:Node) WHERE a.name = \"bob\" OR a.age = 10" = query
     end
   end
+
+  describe "WHERE statements with external variables" do
+    test "can use binaries and strings in matches" do
+      expected = ~S[MATCH (p:Person) WHERE p.name = "sarah" RETURN p]
+
+      name = "sarah"
+
+      query =
+        cypher do
+          match(node(:p, [:Person]))
+          where(p.name = name)
+          return(:p)
+        end
+
+      assert expected == query
+    end
+
+    test "can use integers in matches" do
+      expected = ~S[MATCH (p:Person) WHERE p.age = 34 RETURN p]
+
+      age = 34
+
+      query =
+        cypher do
+          match(node(:p, [:Person]))
+          where(p.age = age)
+          return(:p)
+        end
+
+      assert expected == query
+    end
+
+    test "can use booleans in matches" do
+      expected = ~S[MATCH (p:Person) WHERE p.dev = true RETURN p]
+
+      is_dev = true
+
+      query =
+        cypher do
+          match(node(:p, [:Person]))
+          where(p.dev = is_dev)
+          return(:p)
+        end
+
+      assert expected == query
+    end
+  end
 end

@@ -54,16 +54,4 @@ defmodule Queries.OrderTest do
       assert "MATCH (n) ORDER BY n DESC" = query
     end
   end
-
-  describe "LIMIT" do
-    test "adds a limit statement" do
-      query =
-        cypher do
-          match(node([:Node]))
-          limit(10)
-        end
-
-      assert "MATCH (:Node) LIMIT 10" = query
-    end
-  end
 end

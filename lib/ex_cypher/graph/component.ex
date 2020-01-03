@@ -38,14 +38,20 @@ defmodule ExCypher.Graph.Component do
     args =
       props
       |> Enum.into([])
-      |> Enum.map(fn
-        {name, value} when is_binary(value) -> [name, ":", "\"#{value}\""]
-        {name, value} -> [name, ":", value]
-      end)
+      |> Enum.map(fn {name, value} -> [name, ":", escape_var(value)] end)
       |> Enum.intersperse(",")
 
     [" {", args, "}"]
   end
 
   def escape(str), do: str
+
+  defp escape_var(variable) do
+    quote bind_quoted: [variable: variable] do
+      case variable do
+        var when is_binary(var) -> ~s["#{var}"]
+        var -> var
+      end
+    end
+  end
 end
