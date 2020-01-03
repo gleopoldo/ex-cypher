@@ -7,6 +7,7 @@ defmodule ExCypher.MixProject do
       description: "A DSL to interact with cypher query language",
       version: "0.2.0",
       elixir: "~> 1.9",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package()
@@ -36,4 +37,7 @@ defmodule ExCypher.MixProject do
       links: %{"GitHub" => "https://github.com/gleopoldo/ex-cypher"}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end

@@ -1,4 +1,4 @@
-defmodule ExCypher.Node do
+defmodule ExCypher.Graph.Node do
   @moduledoc """
   Builds nodes using cypher syntax
 
@@ -6,7 +6,7 @@ defmodule ExCypher.Node do
   graph nodes.
   """
 
-  import ExCypher.Props, only: [stringify: 1]
+  alias ExCypher.Graph.Component
 
   @doc """
   Returns the CYPHER's syntax to a node element.
@@ -33,10 +33,10 @@ defmodule ExCypher.Node do
 
   """
   @spec node() :: String.t()
-  def node, do: to_node("")
+  def node, do: node(nil, nil, nil)
 
   @spec node(props :: map()) :: String.t()
-  def node(props = %{}), do: props |> stringify() |> to_node()
+  def node(props = %{}), do: node(nil, nil, props)
 
   @spec node(
           name :: String.t(),
@@ -44,14 +44,16 @@ defmodule ExCypher.Node do
           props :: map()
         ) :: String.t()
   def node(name, labels \\ [], props \\ %{}) do
-    [name, labels, props]
-    |> Enum.map(&stringify/1)
-    |> Enum.join("")
-    |> to_node()
+    Component.escape_node(name, labels, props) |> to_node()
   end
 
-  defp to_node(inner) when is_binary(inner) do
-    inner = String.trim(inner)
-    "(#{inner})"
+  defp to_node(inner) do
+    quote do
+      unquote(inner)
+      |> List.flatten()
+      |> Enum.join()
+      |> String.trim()
+      |> Component.wrap(:node)
+    end
   end
 end

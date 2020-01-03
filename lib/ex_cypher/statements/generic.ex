@@ -20,14 +20,15 @@ defmodule ExCypher.Statements.Generic do
   # elixir's function identification on unknown names, for example,
   # can be shared with other modules
 
-  alias ExCypher.{Node, Relationship}
+  alias ExCypher.Graph.{Node, Relationship}
 
   @spec parse(ast :: term()) :: String.t()
 
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse({{:., _, [first, last | []]}, _, _}) do
-    "#{parse(first)}.#{parse(last)}"
+    {term, _, _} = first
+    "#{Atom.to_string(term)}.#{parse(last)}"
   end
 
   # Injects raw cypher functions
@@ -60,25 +61,13 @@ defmodule ExCypher.Statements.Generic do
     apply(Relationship, :rel, args)
   end
 
-  def parse({:--, _ctx, [from, to]}) do
-    from = parse(from)
-    to = parse(to)
+  @associations [:--, :->, :<-]
+  def parse({association, _ctx, [from, to]})
+      when association in @associations do
+    from = {type(:from, from), parse(from)}
+    to = {type(:to, to), parse(to)}
 
-    apply(Relationship, :assoc, [:--, {from, to}])
-  end
-
-  def parse({:->, _ctx, [from, to | []]}) do
-    from = parse(from)
-    to = parse(to)
-
-    apply(Relationship, :assoc, [:->, {from, to}])
-  end
-
-  def parse({:<-, _ctx, [from, to | []]}) do
-    from = parse(from)
-    to = parse(to)
-
-    apply(Relationship, :assoc, [:<-, {from, to}])
+    apply(Relationship, :assoc, [association, {from, to}])
   end
 
   def parse(term) when is_atom(term),
@@ -87,8 +76,45 @@ defmodule ExCypher.Statements.Generic do
   def parse(list) when is_list(list) do
     list
     |> Enum.map(&parse/1)
-    |> Enum.join(", ")
+    |> Enum.intersperse(",")
+  end
+
+  def parse(term = {var_name, _ctx, nil}) when is_atom(var_name) do
+    quote bind_quoted: [term: term] do
+      if is_binary(term) do
+        "\"#{term}\""
+      else
+        term
+      end
+    end
   end
 
   def parse(term), do: term |> Macro.to_string()
+
+  # We cannot rely on string manipulation in order to identify whether a given
+  # node represents a node or a relationship as was being made before, 'cause it
+  # can lead to problems when unquoting bound variables.
+  #
+  # It's better to rely on the AST structure itself instead
+  def type(side, ast_node) do
+    case {side, ast_node} do
+      {_side, {:node, _ctx, _args}} ->
+        :node
+
+      {_side, {:rel, _ctx, _args}} ->
+        :relationship
+
+      {:from, {assoc, _ctx, [_from, to | _]}} when assoc in @associations ->
+        type(:from, to)
+
+      {:to, {assoc, _ctx, [from | _]}} when assoc in @associations ->
+        type(:to, from)
+
+      {side, {other, _ctx, _args}} ->
+        type(side, other)
+
+      {side, [term | _rest]} ->
+        type(side, term)
+    end
+  end
 end

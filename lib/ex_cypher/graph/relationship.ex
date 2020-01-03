@@ -1,11 +1,12 @@
-defmodule ExCypher.Relationship do
+defmodule ExCypher.Graph.Relationship do
   @moduledoc """
   Builds relationships using cypher syntax
   """
-  import ExCypher.Props, only: [stringify: 1]
+  alias ExCypher.Graph.Component
 
   @typep assoc_direction :: :-- | :-> | :<-
-  @typep node_or_relationship :: String.t()
+  @typep node_or_relationship ::
+           {type :: :node | :relationship, node :: String.t()}
 
   @doc """
   Returns the Cypher's syntax for a relationship:
@@ -32,10 +33,10 @@ defmodule ExCypher.Relationship do
   """
 
   @spec rel() :: String.t()
-  def rel(), do: rel("")
+  def rel, do: rel("")
 
   @spec rel(props :: map()) :: String.t()
-  def rel(props = %{}), do: props |> stringify() |> to_rel()
+  def rel(props = %{}), do: rel(nil, nil, props)
 
   @spec rel(labels :: list(), props :: map()) :: String.t()
   def rel(labels, props = %{})
@@ -48,14 +49,17 @@ defmodule ExCypher.Relationship do
           props :: map()
         ) :: String.t()
   def rel(name, labels \\ [], props \\ %{}) do
-    [name, labels, props]
-    |> Enum.map(&stringify/1)
-    |> Enum.join()
-    |> to_rel()
+    Component.escape_relation(name, labels, props) |> to_rel()
   end
 
-  def to_rel(string) do
-    "[" <> String.trim(string) <> "]"
+  def to_rel(relation) do
+    quote do
+      unquote(relation)
+      |> List.flatten()
+      |> Enum.join()
+      |> String.trim()
+      |> Component.wrap(:relation)
+    end
   end
 
   @doc """
@@ -65,39 +69,28 @@ defmodule ExCypher.Relationship do
           direction :: assoc_direction,
           {from :: node_or_relationship, to :: node_or_relationship}
         ) :: String.t()
-  def assoc(:--, {from, to}) do
-    if any_rel?(from, to) do
-      "#{from}-#{to}"
-    else
-      "#{from}--#{to}"
+  def assoc(assoc_type, {{from_type, from}, {to_type, to}}) do
+    assoc_symbol = assoc_string(assoc_type, from_type, to_type)
+
+    quote do
+      [unquote(from), unquote(assoc_symbol), unquote(to)]
+      |> List.flatten()
+      |> Enum.join()
     end
   end
 
-  def assoc(:->, {from, to}) do
-    if any_rel?(from, to) do
-      "#{from}->#{to}"
-    else
-      "#{from}-->#{to}"
+  defp any_rel?(from_type, to_type) do
+    from_type == :relationship || to_type == :relationship
+  end
+
+  defp assoc_string(assoc_type, from_type, to_type) do
+    case {assoc_type, any_rel?(from_type, to_type)} do
+      {:--, false} -> "--"
+      {:--, true} -> "-"
+      {:<-, false} -> "<--"
+      {:<-, true} -> "<-"
+      {:->, false} -> "-->"
+      {:->, true} -> "->"
     end
-  end
-
-  def assoc(:<-, {from, to}) do
-    if any_rel?(from, to) do
-      "#{from}<-#{to}"
-    else
-      "#{from}<--#{to}"
-    end
-  end
-
-  defp any_rel?(from, to) do
-    named_rel?(from) || named_rel?(to)
-  end
-
-  defp named_rel?(stmt) when is_list(stmt) do
-    stmt |> Enum.join("") |> named_rel?()
-  end
-
-  defp named_rel?(stmt) do
-    String.starts_with?(stmt, "[") || String.ends_with?(stmt, "]")
   end
 end

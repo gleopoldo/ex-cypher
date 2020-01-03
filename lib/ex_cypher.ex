@@ -81,7 +81,7 @@ defmodule ExCypher do
 
       iex> cypher do
       ...>   create (node(:c, [:Country], %{name: "Brazil"}) -- rel([:HAS_CITY]) -> node([:City], %{name: "São Paulo"}))
-      ...>   return c
+      ...>   return :c
       ...> end
       ~S|CREATE (c:Country {name:"Brazil"})-[:HAS_CITY]->(:City {name:"São Paulo"}) RETURN c|
 
@@ -141,48 +141,46 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.{Buffer, Statement}
-
-  @supported_statements [:match, :create, :merge, :return, :where, :pipe_with, :order, :limit]
+  alias ExCypher.{Buffer, Clause, Statement}
+  import ExCypher.Clause, only: [is_supported: 1]
 
   @doc """
     Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
+    cypher_query(block)
+  end
+
+  defp cypher_query(block) do
+    {:ok, pid} = Buffer.new_query()
+
+    Macro.postwalk(block, fn
+      term = {command, _ctx, _args} when is_supported(command) ->
+        parse_term(pid, term)
+
+      term ->
+        term
+    end)
+
+    query = Buffer.generate_query(pid)
+
+    Buffer.stop_buffer(pid)
+
     quote do
-      {:ok, var!(buffer, ExCypher)} = Buffer.new_query()
-
-      unquote(Macro.prewalk(block, &parse/1))
-
-      query = Buffer.generate_query(var!(buffer, ExCypher))
-      Buffer.stop_buffer(var!(buffer, ExCypher))
-
-      query
+      unquote(query)
+      |> Enum.reverse()
+      |> List.flatten()
+      |> Enum.join(" ")
+      |> String.replace(" , ", ", ")
     end
   end
 
-  # Saves a query line into the query buffer (where the other query lines)
-  # are being kept isolated.
+  defp parse_term(pid, term) do
+    params =
+      term
+      |> Clause.new()
+      |> Statement.parse()
 
-  # Since those query lines break with elixir's language syntax, we cannot
-  # call `unquote` on them, thus making the macro approach necessary.
-
-  # Also, `buffer` pid is on another scope, and cannot be accessed directly
-  # by the `parse` function.
-  defmacro command(args) do
-    quote do
-      Buffer.put_buffer(var!(buffer, ExCypher), unquote(args))
-    end
+    Buffer.put_buffer(pid, params)
   end
-
-  # Parses each command-line from the `cypher` macro's block
-  def parse({command, _ctx, args}) when command in @supported_statements do
-    params = Statement.parse(command, args)
-
-    quote do
-      command(unquote(params))
-    end
-  end
-
-  def parse(stmt), do: stmt
 end
