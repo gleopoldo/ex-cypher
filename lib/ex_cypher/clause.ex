@@ -19,7 +19,7 @@ defmodule ExCypher.Clause do
 
   @spec new({name :: atom(), context :: list(), args :: term()}) :: Clause.t()
   def new({name, _ctx, args}) when is_supported(name),
-      do: %Clause{name: name, args: args}
+    do: %Clause{name: name, args: args}
 
   def new(term), do: %Clause{name: nil, args: term}
 end

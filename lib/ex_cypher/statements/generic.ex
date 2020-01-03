@@ -81,9 +81,10 @@ defmodule ExCypher.Statements.Generic do
 
   def parse(term = {var_name, _ctx, nil}) when is_atom(var_name) do
     quote bind_quoted: [term: term] do
-      case term do
-        term when is_binary(term) -> "\"#{term}\""
-        term -> term
+      if is_binary(term) do
+        "\"#{term}\""
+      else
+        term
       end
     end
   end

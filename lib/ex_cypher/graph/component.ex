@@ -48,9 +48,10 @@ defmodule ExCypher.Graph.Component do
 
   defp escape_var(variable) do
     quote bind_quoted: [variable: variable] do
-      case variable do
-        var when is_binary(var) -> ~s["#{var}"]
-        var -> var
+      if is_binary(variable) do
+        ~s["#{variable}"]
+      else
+        variable
       end
     end
   end
