@@ -8,7 +8,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob")
+          where(a.name == "bob")
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\"" = query
@@ -18,7 +18,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob" and a.age = 10)
+          where(a.name == "bob" and a.age == 10)
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\" AND a.age = 10" = query
@@ -28,7 +28,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob" or a.age = 10)
+          where(a.name == "bob" or a.age == 10)
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\" OR a.age = 10" = query
@@ -44,7 +44,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.name = name)
+          where(p.name == name)
           return(:p)
         end
 
@@ -59,7 +59,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.age = age)
+          where(p.age == age)
           return(:p)
         end
 
@@ -74,7 +74,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.dev = is_dev)
+          where(p.dev == is_dev)
           return(:p)
         end
 

@@ -6,16 +6,13 @@ defmodule ExCypher.Statements.Where do
 
   alias ExCypher.Statements.Generic
 
-  @logical_operators [:and, :or, :=]
+  @logical_operators [:and, :or, :==]
 
   @doc false
   @spec parse(ast :: term()) :: String.t()
   def parse({op, _, [first, last | []]})
       when op in @logical_operators do
-    operator_name =
-      op
-      |> Atom.to_string()
-      |> String.upcase()
+    operator_name = fetch_operator(op)
 
     [parse(first), operator_name, parse(last)]
   end
@@ -26,5 +23,13 @@ defmodule ExCypher.Statements.Where do
 
   def parse(ast) do
     Generic.parse(ast)
+  end
+
+  defp fetch_operator(operator) do
+    Map.get(%{
+      :== => "=",
+      :and => "AND",
+      :or => "OR"
+    }, operator)
   end
 end
