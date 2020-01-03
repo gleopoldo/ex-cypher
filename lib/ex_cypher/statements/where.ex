@@ -10,6 +10,12 @@ defmodule ExCypher.Statements.Where do
 
   @doc false
   @spec parse(ast :: term()) :: String.t()
+  def parse({:==, _, [first, nil | []]}),
+    do: [parse(first), "IS NULL"]
+
+  def parse({:!=, _, [first, nil | []]}),
+    do: [parse(first), "IS NOT NULL"]
+
   def parse({op, _, [first, last | []]})
       when op in @logical_operators do
     operator_name = fetch_operator(op)
@@ -31,10 +37,10 @@ defmodule ExCypher.Statements.Where do
       :== => "=",
       :and => "AND",
       :or => "OR",
-      :!= => "<>",
+      :!= => "<>"
     }
 
-    if (string = Map.get(operators_dict, operator)) do
+    if string = Map.get(operators_dict, operator) do
       string
     else
       Atom.to_string(operator)

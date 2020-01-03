@@ -83,6 +83,26 @@ defmodule Queries.WhereTest do
 
       assert "MATCH (a:Node) WHERE a.age >= 25" = query
     end
+
+    test "accepts IS NULL comparisons" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age == nil)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age IS NULL" = query
+    end
+
+    test "accepts IS NOT NULL comparisons" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age != nil)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age IS NOT NULL" = query
+    end
   end
 
   describe "WHERE statements with external variables" do
