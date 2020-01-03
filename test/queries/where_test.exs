@@ -4,34 +4,104 @@ defmodule Queries.WhereTest do
   import ExCypher
 
   describe "WHERE clauses" do
-    test "returns correct query when matching for equality" do
+    test "returns correct query using the equality operator" do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob")
+          where(a.name == "bob")
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\"" = query
     end
 
-    test "accepts conditions merged by an AND operator" do
+    test "accepts conditions using the AND operator" do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob" and a.age = 10)
+          where(a.name == "bob" and a.age == 10)
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\" AND a.age = 10" = query
     end
 
-    test "accepts conditions merged by an OR operator" do
+    test "accepts conditions using the OR operator" do
       query =
         cypher do
           match(node(:a, [:Node]))
-          where(a.name = "bob" or a.age = 10)
+          where(a.name == "bob" or a.age == 10)
         end
 
       assert "MATCH (a:Node) WHERE a.name = \"bob\" OR a.age = 10" = query
+    end
+
+    test "accepts conditions using the inequality operator" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.name != "bob")
+        end
+
+      assert "MATCH (a:Node) WHERE a.name <> \"bob\"" = query
+    end
+
+    test "accepts conditions using the less than operator" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age < 75)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age < 75" = query
+    end
+
+    test "accepts conditions using the greater than operator" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age > 25)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age > 25" = query
+    end
+
+    test "accepts conditions using the less than or equal to operator" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age <= 75)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age <= 75" = query
+    end
+
+    test "accepts conditions using the greater than or equal to operator" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age >= 25)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age >= 25" = query
+    end
+
+    test "accepts IS NULL comparisons" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age == nil)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age IS NULL" = query
+    end
+
+    test "accepts IS NOT NULL comparisons" do
+      query =
+        cypher do
+          match(node(:a, [:Node]))
+          where(a.age != nil)
+        end
+
+      assert "MATCH (a:Node) WHERE a.age IS NOT NULL" = query
     end
   end
 
@@ -44,7 +114,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.name = name)
+          where(p.name == name)
           return(:p)
         end
 
@@ -59,7 +129,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.age = age)
+          where(p.age == age)
           return(:p)
         end
 
@@ -74,7 +144,7 @@ defmodule Queries.WhereTest do
       query =
         cypher do
           match(node(:p, [:Person]))
-          where(p.dev = is_dev)
+          where(p.dev == is_dev)
           return(:p)
         end
 

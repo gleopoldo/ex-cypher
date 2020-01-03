@@ -6,16 +6,19 @@ defmodule ExCypher.Statements.Where do
 
   alias ExCypher.Statements.Generic
 
-  @logical_operators [:and, :or, :=]
+  @logical_operators [:and, :or, :==, :!=, :>, :<, :>=, :<=]
 
   @doc false
   @spec parse(ast :: term()) :: String.t()
+  def parse({:==, _, [first, nil | []]}),
+    do: [parse(first), "IS NULL"]
+
+  def parse({:!=, _, [first, nil | []]}),
+    do: [parse(first), "IS NOT NULL"]
+
   def parse({op, _, [first, last | []]})
       when op in @logical_operators do
-    operator_name =
-      op
-      |> Atom.to_string()
-      |> String.upcase()
+    operator_name = fetch_operator(op)
 
     [parse(first), operator_name, parse(last)]
   end
@@ -26,5 +29,21 @@ defmodule ExCypher.Statements.Where do
 
   def parse(ast) do
     Generic.parse(ast)
+  end
+
+  defp fetch_operator(operator) do
+    # operators that have a different syntax in cypher
+    operators_dict = %{
+      :== => "=",
+      :and => "AND",
+      :or => "OR",
+      :!= => "<>"
+    }
+
+    if string = Map.get(operators_dict, operator) do
+      string
+    else
+      Atom.to_string(operator)
+    end
   end
 end
