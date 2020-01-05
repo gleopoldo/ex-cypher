@@ -1,7 +1,6 @@
 defmodule ExCypher.Statement do
   @moduledoc false
 
-  alias ExCypher.Clause
   alias ExCypher.Statements.{Generic, Order, Where}
 
   # Cypher syntax varies depending on the statement being used. For example,
@@ -18,25 +17,26 @@ defmodule ExCypher.Statement do
 
   @type command_name :: atom
 
-  @spec parse(clause :: Clause.t()) :: String.t() | list()
-  def parse(%Clause{name: :where, args: ast}) do
-    ["WHERE", Where.parse(ast)]
+  @spec parse(cmd_name :: String.t(), ast :: term(), Macro.Env.t()) ::
+          String.t() | list()
+  def parse(:where, ast, env) do
+    ["WHERE", Where.parse(ast, env)]
   end
 
-  def parse(%Clause{name: :order, args: ast}) do
-    ["ORDER BY", Order.parse(ast)]
+  def parse(:order, ast, env) do
+    ["ORDER BY", Order.parse(ast, env)]
   end
 
-  def parse(%Clause{name: :pipe_with, args: ast}) do
-    ["WITH", Generic.parse(ast)]
+  def parse(:pipe_with, ast, env) do
+    ["WITH", Generic.parse(ast, env)]
   end
 
-  def parse(clause = %Clause{}) do
+  def parse(command_name, ast, env) do
     command_name =
-      clause.name
+      command_name
       |> Atom.to_string()
       |> String.upcase()
 
-    [command_name, Generic.parse(clause.args)]
+    [command_name, Generic.parse(ast, env)]
   end
 end

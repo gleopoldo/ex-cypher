@@ -7,7 +7,9 @@ defmodule ExCypher.Statements.Order do
   alias ExCypher.Statements.Generic
 
   @spec parse(ast :: term()) :: String.t()
-  def parse({term, ordering}) when ordering in [:asc, :desc] do
+  def parse(term, env \\ nil)
+
+  def parse({term, ordering}, _env) when ordering in [:asc, :desc] do
     direction =
       ordering
       |> Generic.parse()
@@ -16,11 +18,11 @@ defmodule ExCypher.Statements.Order do
     [Generic.parse(term), direction]
   end
 
-  def parse(list) when is_list(list) do
+  def parse(list, _env) when is_list(list) do
     list
     |> Enum.map(&parse/1)
     |> Enum.intersperse(",")
   end
 
-  def parse(ast), do: Generic.parse(ast)
+  def parse(ast, _env), do: Generic.parse(ast)
 end

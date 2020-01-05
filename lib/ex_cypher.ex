@@ -141,22 +141,23 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.{Buffer, Clause, Statement}
+  alias ExCypher.{Buffer, Statement}
   import ExCypher.Clause, only: [is_supported: 1]
 
   @doc """
     Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
-    cypher_query(block)
+    cypher_query(block, __CALLER__)
   end
 
-  defp cypher_query(block) do
+  defp cypher_query(block, env) do
     {:ok, pid} = Buffer.new_query()
 
     Macro.postwalk(block, fn
-      term = {command, _ctx, _args} when is_supported(command) ->
-        parse_term(pid, term)
+      {command, _ctx, args} when is_supported(command) ->
+        params = Statement.parse(command, args, env)
+        Buffer.put_buffer(pid, params)
 
       term ->
         term
@@ -173,14 +174,5 @@ defmodule ExCypher do
       |> Enum.join(" ")
       |> String.replace(" , ", ", ")
     end
-  end
-
-  defp parse_term(pid, term) do
-    params =
-      term
-      |> Clause.new()
-      |> Statement.parse()
-
-    Buffer.put_buffer(pid, params)
   end
 end
