@@ -295,5 +295,17 @@ defmodule Queries.MatchTest do
 
       assert expected == query
     end
+
+    test "with maps" do
+      person = %{name: "bob", age: 12}
+      expected = ~s[MATCH (:Person {age:#{person.age},name:\"#{person.name}\"})]
+
+      query =
+        cypher do
+          match node([:Person], %{name: person.name, age: person.age})
+        end
+
+      assert expected == query
+    end
   end
 end

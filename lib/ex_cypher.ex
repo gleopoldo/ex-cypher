@@ -148,15 +148,15 @@ defmodule ExCypher do
     Wraps contents of a Cypher query and returns the query string.
   """
   defmacro cypher(do: block) do
-    cypher_query(block)
+    cypher_query(block, __CALLER__)
   end
 
-  defp cypher_query(block) do
+  defp cypher_query(block, env) do
     {:ok, pid} = Buffer.new_query()
 
     Macro.postwalk(block, fn
       term = {command, _ctx, _args} when is_supported(command) ->
-        parse_term(pid, term)
+        parse_term(pid, term, env)
 
       term ->
         term
@@ -175,10 +175,10 @@ defmodule ExCypher do
     end
   end
 
-  defp parse_term(pid, term) do
+  defp parse_term(pid, term, env) do
     params =
       term
-      |> Clause.new()
+      |> Clause.new(env)
       |> Statement.parse()
 
     Buffer.put_buffer(pid, params)

@@ -19,15 +19,15 @@ defmodule ExCypher.Statement do
   @type command_name :: atom
 
   @spec parse(clause :: Clause.t()) :: String.t() | list()
-  def parse(%Clause{name: :where, args: ast}) do
-    ["WHERE", Where.parse(ast)]
+  def parse(%Clause{name: :where, args: ast, env: env}) do
+    ["WHERE", Where.parse(ast, env)]
   end
 
-  def parse(%Clause{name: :order, args: ast}) do
-    ["ORDER BY", Order.parse(ast)]
+  def parse(%Clause{name: :order, args: ast, env: env}) do
+    ["ORDER BY", Order.parse(ast, env)]
   end
 
-  def parse(%Clause{name: :pipe_with, args: ast}) do
+  def parse(%Clause{name: :pipe_with, args: ast, env: env}) do
     ["WITH", Generic.parse(ast)]
   end
 
@@ -37,6 +37,6 @@ defmodule ExCypher.Statement do
       |> Atom.to_string()
       |> String.upcase()
 
-    [command_name, Generic.parse(clause.args)]
+    [command_name, Generic.parse(clause.args, clause.env)]
   end
 end

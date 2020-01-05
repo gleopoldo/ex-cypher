@@ -150,5 +150,18 @@ defmodule Queries.WhereTest do
 
       assert expected == query
     end
+
+    test "can use it with maps" do
+      person = %{name: "bob", age: 12}
+      expected = ~s[MATCH (:Person) WHERE p.name = \"#{person.name}\" AND p.age = #{person.age}]
+
+      query =
+        cypher do
+          match node([:Person])
+          where p.name == person.name and p.age == person.age
+        end
+
+      assert expected == query
+    end
   end
 end

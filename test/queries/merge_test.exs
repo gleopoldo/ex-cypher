@@ -106,5 +106,17 @@ defmodule Queries.MergeTest do
 
       assert expected == query
     end
+
+    test "with maps" do
+      person = %{name: "bob", age: 12}
+      expected = ~s[MERGE (:Person {age:#{person.age},name:\"#{person.name}\"})]
+
+      query =
+        cypher do
+          merge node([:Person], %{name: person.name, age: person.age})
+        end
+
+      assert expected == query
+    end
   end
 end
