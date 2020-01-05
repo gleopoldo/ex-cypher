@@ -113,7 +113,7 @@ defmodule Queries.MergeTest do
 
       query =
         cypher do
-          merge node([:Person], %{name: person.name, age: person.age})
+          merge(node([:Person], %{name: person.name, age: person.age}))
         end
 
       assert expected == query

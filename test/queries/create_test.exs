@@ -113,7 +113,7 @@ defmodule Queries.CreateTest do
 
       query =
         cypher do
-          create node([:Person], %{name: person.name, age: person.age})
+          create(node([:Person], %{name: person.name, age: person.age}))
         end
 
       assert expected == query

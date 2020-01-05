@@ -141,7 +141,7 @@ defmodule ExCypher do
 
   """
 
-  alias ExCypher.{Buffer, Clause, Statement}
+  alias ExCypher.{Buffer, Statement}
   import ExCypher.Clause, only: [is_supported: 1]
 
   @doc """
@@ -155,8 +155,9 @@ defmodule ExCypher do
     {:ok, pid} = Buffer.new_query()
 
     Macro.postwalk(block, fn
-      term = {command, _ctx, _args} when is_supported(command) ->
-        parse_term(pid, term, env)
+      {command, _ctx, args} when is_supported(command) ->
+        params = Statement.parse(command, args, env)
+        Buffer.put_buffer(pid, params)
 
       term ->
         term
@@ -173,14 +174,5 @@ defmodule ExCypher do
       |> Enum.join(" ")
       |> String.replace(" , ", ", ")
     end
-  end
-
-  defp parse_term(pid, term, env) do
-    params =
-      term
-      |> Clause.new(env)
-      |> Statement.parse()
-
-    Buffer.put_buffer(pid, params)
   end
 end

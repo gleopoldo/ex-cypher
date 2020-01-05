@@ -123,7 +123,7 @@ defmodule ExCypher.Statements.Generic do
       env
       |> Macro.Env.vars()
       |> Keyword.keys()
-      |> Enum.find(& &1 == var_name)
+      |> Enum.find(&(&1 == var_name))
     else
       false
     end

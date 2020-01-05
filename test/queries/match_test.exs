@@ -302,7 +302,7 @@ defmodule Queries.MatchTest do
 
       query =
         cypher do
-          match node([:Person], %{name: person.name, age: person.age})
+          match(node([:Person], %{name: person.name, age: person.age}))
         end
 
       assert expected == query

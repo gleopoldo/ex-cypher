@@ -157,8 +157,8 @@ defmodule Queries.WhereTest do
 
       query =
         cypher do
-          match node([:Person])
-          where p.name == person.name and p.age == person.age
+          match(node([:Person]))
+          where(p.name == person.name and p.age == person.age)
         end
 
       assert expected == query
