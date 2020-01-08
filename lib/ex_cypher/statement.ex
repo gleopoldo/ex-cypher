@@ -1,7 +1,7 @@
 defmodule ExCypher.Statement do
   @moduledoc false
 
-  alias ExCypher.Statements.{Generic, Order, Where}
+  alias ExCypher.Statements.{Generic, Order, Set, Where}
 
   # Cypher syntax varies depending on the statement being used. For example,
   # the `WHERE` statement's syntax can vary a lot when compared to simpler
@@ -29,6 +29,10 @@ defmodule ExCypher.Statement do
 
   def parse(:pipe_with, ast, env) do
     ["WITH", Generic.parse(ast, env)]
+  end
+
+  def parse(:set, ast, env) do
+    ["SET", Set.parse(ast, env)]
   end
 
   def parse(command_name, ast, env) do

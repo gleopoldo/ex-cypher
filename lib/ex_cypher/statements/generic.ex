@@ -76,6 +76,8 @@ defmodule ExCypher.Statements.Generic do
     apply(Relationship, :assoc, [association, {from, to}])
   end
 
+  def parse(nil, _env), do: "NULL"
+
   def parse(term, _env) when is_atom(term),
     do: Atom.to_string(term)
 
