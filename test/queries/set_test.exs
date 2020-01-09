@@ -101,5 +101,33 @@ defmodule Queries.SetTest do
 
       assert ^expected = query
     end
+
+    test "allows setting a new label to a node" do
+      query = cypher do
+        match(node(:p, [:Person], %{name: "Andy"}))
+        set label(:p, [:Teacher])
+        return p.name
+      end
+
+      expected = "MATCH (p:Person {name:\"Andy\"}) " <> \
+                 "SET p:Teacher " <> \
+                 "RETURN p.name"
+
+      assert ^expected = query
+    end
+
+    test "allows setting multiple labels to a node" do
+      query = cypher do
+        match(node(:p, [:Person], %{name: "Andy"}))
+        set label(:p, [:Teacher, :Scientist])
+        return p.name
+      end
+
+      expected = "MATCH (p:Person {name:\"Andy\"}) " <> \
+                 "SET p:Teacher:Scientist " <> \
+                 "RETURN p.name"
+
+      assert ^expected = query
+    end
   end
 end
