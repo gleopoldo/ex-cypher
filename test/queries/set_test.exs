@@ -87,5 +87,19 @@ defmodule Queries.SetTest do
 
       assert ^expected = query
     end
+
+    test "allows multiple properties using a comma separator" do
+      query = cypher do
+        match(node(:p, [:Person], %{name: "Andy"}))
+        set p.name = "bob", p.age = 23
+        return p.name
+      end
+
+      expected = "MATCH (p:Person {name:\"Andy\"}) " <> \
+                 "SET p.name = \"bob\", p.age = 23 " <> \
+                 "RETURN p.name"
+
+      assert ^expected = query
+    end
   end
 end
