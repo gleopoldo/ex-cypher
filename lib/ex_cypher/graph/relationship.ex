@@ -43,6 +43,11 @@ defmodule ExCypher.Graph.Relationship do
       when is_list(labels),
       do: rel("", labels, props)
 
+  @spec rel(rel_name :: String.t() | atom(), props :: map()) :: String.t()
+  def rel(rel_name, props = %{})
+      when is_binary(rel_name) or is_atom(rel_name),
+      do: rel(rel_name, [], props)
+
   @spec rel(
           name :: String.t(),
           labels :: list(),

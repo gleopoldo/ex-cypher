@@ -12,12 +12,28 @@ defmodule ExCypher.Graph.Component do
   # This module provides a way to help converting those contents
   # into a cypher-compliant strings that can be used to build
   # both nodes and relationships arguments.
-  def escape_node(node_name \\ "", node_labels \\ [], node_props \\ %{}) do
+  def escape_node(node_name \\ "", node_labels \\ [], node_props \\ %{})
+
+  def escape_node(node_name, node_labels, props) when props == %{} do
+    [escape(node_name), escape(node_labels)]
+  end
+
+  def escape_node(node_name, node_labels, node_props) do
     [escape(node_name), escape(node_labels), escape(node_props)]
   end
 
-  def escape_relation(rel_name \\ "", rel_labels \\ [], rel_props \\ %{}) do
+  def escape_relation(rel_name \\ "", rel_labels \\ [], rel_props \\ %{})
+
+  def escape_relation(rel_name, rel_labels, props) when props == %{} do
+    [escape(rel_name), escape(rel_labels)]
+  end
+
+  def escape_relation(rel_name, rel_labels, rel_props) do
     [escape(rel_name), escape(rel_labels), escape(rel_props)]
+  end
+
+  def escape_properties(props = %{}) do
+    [escape(props)]
   end
 
   def escape(nil), do: ""
@@ -27,8 +43,6 @@ defmodule ExCypher.Graph.Component do
       do: Atom.to_string(element)
 
   def escape([]), do: ""
-
-  def escape(props) when props == %{}, do: ""
 
   def escape(list)
       when is_list(list),

@@ -38,6 +38,17 @@ defmodule ExCypher.Graph.Node do
   @spec node(props :: map()) :: String.t()
   def node(props = %{}), do: node(nil, nil, props)
 
+  @spec node(node_name :: Strint.t() | atom(),
+             props :: map()) :: String.t()
+  def node(node_name, props = %{})
+      when is_binary(node_name) or is_atom(node_name),
+      do: node(node_name, [], props)
+
+  @spec node(labels_list :: [atom()], props :: map()) :: String.t()
+  def node(labels_list, props = %{})
+      when is_list(labels_list),
+      do: node("", labels_list, props)
+
   @spec node(
           name :: String.t(),
           labels :: list(),
