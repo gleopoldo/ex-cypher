@@ -129,5 +129,19 @@ defmodule Queries.SetTest do
 
       assert ^expected = query
     end
+
+    test "allows updating specific properties" do
+      query = cypher do
+        match(node(:p, [:Person], %{name: "Andy"}))
+        set %{p | age: 35}
+        return p.name
+      end
+
+      expected = "MATCH (p:Person {name:\"Andy\"}) " <> \
+                 "SET p += {age:35} " <> \
+                 "RETURN p.name"
+
+      assert ^expected = query
+    end
   end
 end

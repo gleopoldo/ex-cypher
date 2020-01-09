@@ -8,18 +8,12 @@ defmodule ExCypher.Statements.Set do
     [parse(first, env), "=", parse(last, env)]
   end
 
-  def parse({:%{}, _ctx, args}, _env) do
-    properties =
-      args
-      |> Enum.into(%{})
-      |> Component.escape_properties()
+  def parse({:%{}, _, [{:|, _, [node_name, args | []]}]}, env) do
+    [parse(node_name, env), "+=", parse_properties(args)]
+  end
 
-    quote do
-      unquote(properties)
-      |> List.flatten()
-      |> Enum.join()
-      |> String.trim()
-    end
+  def parse({:%{}, _ctx, args}, _env) do
+    parse_properties(args)
   end
 
   def parse({:label, _ctx, [node_name, labels | []]}, env) do
@@ -44,5 +38,20 @@ defmodule ExCypher.Statements.Set do
 
   def parse(ast, env) do
     Generic.parse(ast, env)
+  end
+
+  defp parse_properties(props) do
+    properties =
+      props
+      |> IO.inspect()
+      |> Enum.into(%{})
+      |> Component.escape_properties()
+
+    quote do
+      unquote(properties)
+      |> List.flatten()
+      |> Enum.join()
+      |> String.trim()
+    end
   end
 end
