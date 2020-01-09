@@ -5,7 +5,7 @@ defmodule ExCypher.MixProject do
     [
       app: :ex_cypher,
       description: "A DSL to interact with cypher query language",
-      version: "0.2.0",
+      version: "0.3.0-rc.1",
       elixir: "~> 1.9",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
