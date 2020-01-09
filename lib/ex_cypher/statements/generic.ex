@@ -20,22 +20,12 @@ defmodule ExCypher.Statements.Generic do
   # elixir's function identification on unknown names, for example,
   # can be shared with other modules
 
+  alias ExCypher.Binding
   alias ExCypher.Graph.{Node, Relationship}
 
   @spec parse(ast :: term()) :: String.t()
 
   def parse(ast, env \\ nil)
-
-  # Removing parenthesis from statements that elixir
-  # attempts to resolve a name as a function.
-  def parse(ast = {{:., _, [first, last | []]}, _, _}, env) do
-    if is_var?(first, env) do
-      escape(ast)
-    else
-      {term, _, _} = first
-      "#{Atom.to_string(term)}.#{parse(last)}"
-    end
-  end
 
   # Injects raw cypher functions
   def parse({:fragment, _ctx, args}, _env) do
@@ -78,20 +68,15 @@ defmodule ExCypher.Statements.Generic do
 
   def parse(nil, _env), do: "NULL"
 
-  def parse(term, _env) when is_atom(term),
-    do: Atom.to_string(term)
-
-  def parse(list, _env) when is_list(list) do
+  def parse(list, env) when is_list(list) do
     list
-    |> Enum.map(&parse/1)
+    |> Enum.map(&parse(&1, env))
     |> Enum.intersperse(",")
   end
 
-  def parse(term = {var_name, _ctx, nil}, _env) when is_atom(var_name) do
-    escape(term)
+  def parse(term, env) do
+    Binding.escape(term, env)
   end
-
-  def parse(term, _env), do: term |> Macro.to_string()
 
   # We cannot rely on string manipulation in order to identify whether a given
   # node represents a node or a relationship as was being made before, 'cause it
@@ -117,27 +102,6 @@ defmodule ExCypher.Statements.Generic do
 
       {side, [term | _rest]} ->
         type(side, term)
-    end
-  end
-
-  defp is_var?({var_name, _ctx, nil}, env) do
-    if env do
-      env
-      |> Macro.Env.vars()
-      |> Keyword.keys()
-      |> Enum.find(&(&1 == var_name))
-    else
-      false
-    end
-  end
-
-  defp escape(term) do
-    quote bind_quoted: [term: term] do
-      if is_binary(term) do
-        "\"#{term}\""
-      else
-        term
-      end
     end
   end
 end

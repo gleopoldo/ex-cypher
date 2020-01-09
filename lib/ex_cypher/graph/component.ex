@@ -1,6 +1,8 @@
 defmodule ExCypher.Graph.Component do
   @moduledoc false
 
+  alias ExCypher.Binding
+
   def wrap(str, :node), do: "(" <> str <> ")"
 
   def wrap(str, :relation), do: "[" <> str <> "]"
@@ -61,12 +63,6 @@ defmodule ExCypher.Graph.Component do
   def escape(str), do: str
 
   defp escape_var(variable) do
-    quote bind_quoted: [variable: variable] do
-      if is_binary(variable) do
-        ~s["#{variable}"]
-      else
-        variable
-      end
-    end
+    Binding.escape(variable)
   end
 end

@@ -43,7 +43,6 @@ defmodule ExCypher.Statements.Set do
   defp parse_properties(props) do
     properties =
       props
-      |> IO.inspect()
       |> Enum.into(%{})
       |> Component.escape_properties()
 
