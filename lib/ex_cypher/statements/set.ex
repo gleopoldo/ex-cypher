@@ -1,10 +1,10 @@
 defmodule ExCypher.Statements.Set do
   @moduledoc false
 
-  alias ExCypher.Statements.Generic
   alias ExCypher.Graph.Component
+  alias ExCypher.Statements.Generic
 
-  def parse({:=, _ctx, [first, last |[]]}, env) do
+  def parse({:=, _ctx, [first, last | []]}, env) do
     [parse(first, env), "=", parse(last, env)]
   end
 
@@ -27,8 +27,7 @@ defmodule ExCypher.Statements.Set do
     end
   end
 
-  def parse({atom, _ctx, nil}, _env) when is_atom(atom), do:
-    Atom.to_string(atom)
+  def parse({atom, _ctx, nil}, _env) when is_atom(atom), do: Atom.to_string(atom)
 
   def parse(list, env) when is_list(list) do
     list
@@ -43,7 +42,6 @@ defmodule ExCypher.Statements.Set do
   defp parse_properties(props) do
     properties =
       props
-      |> IO.inspect()
       |> Enum.into(%{})
       |> Component.escape_properties()
 

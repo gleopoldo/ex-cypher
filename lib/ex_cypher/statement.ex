@@ -2,7 +2,7 @@ defmodule ExCypher.Statement do
   @moduledoc false
 
   alias ExCypher.Statements.{Generic, Order, Set, Where, With}
-  
+
   # Cypher syntax varies depending on the statement being used. For example,
   # the `WHERE` statement's syntax can vary a lot when compared to simpler
   # `RETURN` statements.

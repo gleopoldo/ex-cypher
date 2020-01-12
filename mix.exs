@@ -6,9 +6,15 @@ defmodule ExCypher.MixProject do
       app: :ex_cypher,
       description: "A DSL to interact with cypher query language",
       version: "0.3.0-rc.1",
-      elixir: "~> 1.9",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ],
       deps: deps(),
       package: package()
     ]
@@ -25,6 +31,7 @@ defmodule ExCypher.MixProject do
   defp deps do
     [
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.10", only: :test},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
