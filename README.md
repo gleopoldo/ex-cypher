@@ -17,16 +17,12 @@ Add this to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_cypher, "~> 0.1.0"}
+    {:ex_cypher, "~> 0.3.0"}
   ]
 end
 ```
 
 ## Usage
-
-Let's try to build some simple queries with `ex-cypher`:
-
-#### Basic Usage
 
 Add to your module this first line:
 
