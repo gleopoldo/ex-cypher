@@ -56,7 +56,7 @@ defmodule Queries.SetTest do
         end
 
       expected =
-        "MATCH (p1:Person {name:\"Andy\"}), (p2:Person {name:\"Bob\"}) " <>
+        ~S|MATCH (p1:Person {name:"Andy"}), (p2:Person {name:"Bob"}) | <>
           "SET p1 = p2 " <> "RETURN p.name"
 
       assert ^expected = query

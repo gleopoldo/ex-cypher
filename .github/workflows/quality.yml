@@ -1,4 +1,4 @@
-name: Mix Test
+name: Code Quality
 
 on: push
 

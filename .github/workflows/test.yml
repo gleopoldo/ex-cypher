@@ -1,4 +1,4 @@
-name: Mix Test
+name: Test
 
 on: push
 
