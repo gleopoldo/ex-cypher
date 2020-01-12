@@ -1,5 +1,8 @@
 # ExCypher
 
+![](https://github.com/gleopoldo/ex-cypher/workflows/Test/badge.svg)
+![](https://github.com/gleopoldo/ex-cypher/workflows/Code%20Quality/badge.svg)
+
 Want a DSL to interact with Neo4j? Tired of concatenating stuff in your queries?
 
 Use Ex-Cypher!
