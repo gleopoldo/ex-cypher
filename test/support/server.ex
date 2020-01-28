@@ -17,7 +17,12 @@ defmodule ExCypher.Support.Server do
   end
 
   def query(conn, query) do
-    {:ok, response} = Neo.query(conn, query)
-    response
+    with {:ok, response} <- Neo.query(conn, query) do
+      response
+    else
+      {:error, reason} ->
+        IO.inspect(reason)
+        {:error, reason}
+    end
   end
 end

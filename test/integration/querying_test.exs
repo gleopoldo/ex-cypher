@@ -69,5 +69,51 @@ defmodule Integration.Querying do
           Server.query(conn, query)
       end)
     end
+
+    test "is able to match associations" do
+      Server.transaction(fn conn ->
+        Server.query(conn, """
+          CREATE (acme:Company {name: "Acme"}),
+                 (marvel:Company {name: "Marvel"}),
+                 (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
+                 (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
+                 (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
+                 (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
+        """)
+
+        query = cypher do
+          match (node(:person, [:Person]) -- rel([:WORKS_IN]) -> node([:Company], %{name: "Acme"}))
+          return person.name
+          order {person.name, :asc}
+        end
+
+        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} =
+          Server.query(conn, query)
+      end)
+    end
+
+    test "is able to match associations and apply filters" do
+      Server.transaction(fn conn ->
+        Server.query(conn, """
+          CREATE (acme:Company {name: "Acme"}),
+                 (marvel:Company {name: "Marvel"}),
+                 (justin:Person {name:"Justin"}),
+                 (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
+                 (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
+                 (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
+                 (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
+        """)
+
+        query = cypher do
+          match (node(:person, [:Person]) -- rel([:WORKS_IN]) -> node(:company, [:Company]))
+          where company.name == "Acme"
+          return person.name
+          order {person.name, :asc}
+        end
+
+        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} =
+          Server.query(conn, query)
+      end)
+    end
   end
 end
