@@ -6,14 +6,24 @@ cmd="$@"
 
 check_server_availability() {
   url=$1
+  port=$2
+  retry=1
+  exit_status=1
 
-  until curl -i "http://$url:7474" 2>&1 | grep -c -e '200 OK'; do
-    echo "Waiting for neo4j at $url..."
+  until [ $retry -ge 20 ]; do
+    if curl -i "http://$url:7474" 2>&1 | grep -c -e '200 OK'; then
+      echo "All servers up!"
+      exit_status=0
+      exec $cmd
+      break
+    fi
+
+    retry=$[$retry+1]
+    echo "Waiting for neo4j at $url:$port (retry: $retry/20)..."
     sleep 1
   done
+
+  exit $exit_status
 }
 
-check_server_availability "neo4j"
-
-echo "All servers up!"
-exec $cmd
+check_server_availability $NEO4J_HOST $NEO4J_HTTP_PORT

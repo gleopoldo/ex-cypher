@@ -1,5 +1,5 @@
 defmodule Integration.QueryingTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case
 
   import ExCypher
   alias ExCypher.Support.Server

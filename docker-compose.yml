@@ -8,6 +8,10 @@ services:
     volumes:
       - $PWD:/excypher
     working_dir: /excypher
+    environment:
+      NEO4J_HOST: neo4j
+      NEO4J_HTTP_PORT: 7474
+      NEO4J_PORT: 7687
     depends_on:
       - neo4j
 
