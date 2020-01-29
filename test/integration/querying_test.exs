@@ -17,14 +17,14 @@ defmodule Integration.QueryingTest do
                  (:Person {name:"Mark"}), (:Person {name:"Jane"})
         """)
 
-        query = cypher do
-          match(node(:p, [:Person]))
-          return p.name
-          order {p.name, :asc}
-        end
+        query =
+          cypher do
+            match(node(:p, [:Person]))
+            return(p.name)
+            order({p.name, :asc})
+          end
 
-        assert %{records: [["Bob"], ["Ellie"], ["Jane"], ["Mark"]]} =
-          Server.query(conn, query)
+        assert %{records: [["Bob"], ["Ellie"], ["Jane"], ["Mark"]]} = Server.query(conn, query)
       end)
     end
 
@@ -38,16 +38,16 @@ defmodule Integration.QueryingTest do
                  (:Person {name:"Mary", age:25})
         """)
 
-        query = cypher do
-          match(node(:p, [:Person]))
-          where p.age >= 25
-          return p.name
-          order {p.age, :asc}, {p.name, :asc}
-          limit 3
-        end
+        query =
+          cypher do
+            match(node(:p, [:Person]))
+            where(p.age >= 25)
+            return(p.name)
+            order({p.age, :asc}, {p.name, :asc})
+            limit(3)
+          end
 
-        assert %{records: [["Mary"], ["Lucy"], ["Peter"]]} =
-          Server.query(conn, query)
+        assert %{records: [["Mary"], ["Lucy"], ["Peter"]]} = Server.query(conn, query)
       end)
     end
 
@@ -59,14 +59,14 @@ defmodule Integration.QueryingTest do
                  (:Cyborg {name:"Arnold"})
         """)
 
-        query = cypher do
-          match(node(:d, [:Droid]))
-          return d.name
-          order {d.name, :asc}
-        end
+        query =
+          cypher do
+            match(node(:d, [:Droid]))
+            return(d.name)
+            order({d.name, :asc})
+          end
 
-        assert %{records: [["C3PO"], ["R2-D2"]]} =
-          Server.query(conn, query)
+        assert %{records: [["C3PO"], ["R2-D2"]]} = Server.query(conn, query)
       end)
     end
 
@@ -81,14 +81,17 @@ defmodule Integration.QueryingTest do
                  (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
         """)
 
-        query = cypher do
-          match (node(:person, [:Person]) -- rel([:WORKS_IN]) -> node([:Company], %{name: "Acme"}))
-          return person.name
-          order {person.name, :asc}
-        end
+        query =
+          cypher do
+            match(
+              (node(:person, [:Person]) -- rel([:WORKS_IN]) -> node([:Company], %{name: "Acme"}))
+            )
 
-        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} =
-          Server.query(conn, query)
+            return(person.name)
+            order({person.name, :asc})
+          end
+
+        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} = Server.query(conn, query)
       end)
     end
 
@@ -104,15 +107,15 @@ defmodule Integration.QueryingTest do
                  (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
         """)
 
-        query = cypher do
-          match (node(:person, [:Person]) -- rel([:WORKS_IN]) -> node(:company, [:Company]))
-          where company.name == "Acme"
-          return person.name
-          order {person.name, :asc}
-        end
+        query =
+          cypher do
+            match((node(:person, [:Person]) -- rel([:WORKS_IN]) -> node(:company, [:Company])))
+            where(company.name == "Acme")
+            return(person.name)
+            order({person.name, :asc})
+          end
 
-        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} =
-          Server.query(conn, query)
+        assert %{records: [["Anne"], ["Charles"], ["Martin"]]} = Server.query(conn, query)
       end)
     end
   end
