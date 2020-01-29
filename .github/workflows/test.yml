@@ -8,12 +8,8 @@ jobs:
     name: Test Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
     strategy:
       matrix:
-        otp: [20.3, 21.3, 22.2]
-        elixir: [1.7.4, 1.8.2, 1.9.4]
-    env:
-      NEO4J_HOST: localhost
-      NEO4J_HTTP_PORT: 7474
-      NEO4J_PORT: 7687
+        otp: [22.2]
+        elixir: [1.9.4]
 
     services:
       neo4j:
@@ -23,6 +19,12 @@ jobs:
         ports:
           - 7474:7474
           - 7687:7687
+
+    env:
+      NEO4J_HOST: localhost
+      NEO4J_HTTP_PORT: 7474
+      NEO4J_PORT: 7687
+
 
     steps:
     - uses: actions/checkout@v2
@@ -35,6 +37,8 @@ jobs:
       run: mix deps.get
     - name: Wait neo4j server to be available...
       run: ./script/wait_for_neo4j
+    - name: Compile
+      run: MIX_ENV=test mix compile
     - name: Run Tests
       run: mix coveralls
 

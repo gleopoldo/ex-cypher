@@ -1,12 +1,11 @@
 defmodule ExCypher.Support.Server do
   @moduledoc false
 
-  @server_url "bolt://#{System.get_env("NEO4J_HOST")}:#{System.get_env("NEO4J_PORT")}"
+  @server_url "http://#{System.get_env("NEO4J_HOST")}:#{System.get_env("NEO4J_PORT")}"
 
   alias Bolt.Sips, as: Neo
 
   def start_link do
-    IO.inspect("Connecting to #{@server_url}")
     {:ok, _pid} = Bolt.Sips.start_link(url: @server_url)
   end
 
