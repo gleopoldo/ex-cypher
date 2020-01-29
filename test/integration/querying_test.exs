@@ -1,4 +1,4 @@
-defmodule Integration.Querying do
+defmodule Integration.QueryingTest do
   use ExUnit.Case, async: false
 
   import ExCypher
