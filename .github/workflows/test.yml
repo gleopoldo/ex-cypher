@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         otp: [22.2]
-        elixir: [1.8.2, 1.9.4]
+        elixir: [1.9.4]
 
     services:
       neo4j:
@@ -21,7 +21,7 @@ jobs:
           - 7687:7687
 
     env:
-      NEO4J_HOST: localhost
+      NEO4J_HOST: 0.0.0.0
       NEO4J_HTTP_PORT: 7474
       NEO4J_PORT: 7687
 
