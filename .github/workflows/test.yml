@@ -20,8 +20,6 @@ jobs:
 
     - name: Install Dependencies
       run: mix deps.get
-    - name: Wait neo4j server to be available...
-      run: ./script/wait_for_neo4j
     - name: Compile
       run: MIX_ENV=test mix compile
     - name: Run Tests
