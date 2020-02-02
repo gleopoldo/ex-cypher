@@ -23,7 +23,7 @@ jobs:
     - name: Compile
       run: MIX_ENV=test mix compile
     - name: Run Tests
-      run: mix test --exclude integration:true
+      run: mix coveralls --exclude integration:true
 
   integration-test:
     runs-on: ubuntu-latest
