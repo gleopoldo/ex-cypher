@@ -30,6 +30,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     name: Integration Tests
+    needs: test
 
     services:
       neo4j:
