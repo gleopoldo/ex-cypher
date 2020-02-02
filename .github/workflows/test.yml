@@ -9,7 +9,27 @@ jobs:
     strategy:
       matrix:
         otp: [22.2]
-        elixir: [1.9.4]
+        elixir: [1.7.4, 1.8.2, 1.9.4, 1.10.0]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-elixir@v1
+      with:
+        elixir-version: ${{matrix.elixir}}
+        otp-version: ${{matrix.otp}}
+
+    - name: Install Dependencies
+      run: mix deps.get
+    - name: Wait neo4j server to be available...
+      run: ./script/wait_for_neo4j
+    - name: Compile
+      run: MIX_ENV=test mix compile
+    - name: Run Tests
+      run: mix test --exclude integration:true
+
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration Tests
 
     services:
       neo4j:
@@ -30,8 +50,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-elixir@v1
       with:
-        elixir-version: ${{matrix.elixir}}
-        otp-version: ${{matrix.otp}}
+        elixir-version: 1.10.0
+        otp-version: 22.2
 
     - name: Install Dependencies
       run: mix deps.get
@@ -40,7 +60,7 @@ jobs:
     - name: Compile
       run: MIX_ENV=test mix compile
     - name: Run Tests
-      run: mix coveralls
+      run: mix test --only integration:true
 
   quality:
     runs-on: ubuntu-latest
@@ -51,7 +71,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-elixir@v1
       with:
-        elixir-version: 1.9.4
+        elixir-version: 1.10.0
         otp-version: 22.2
 
     - name: Install Dependencies

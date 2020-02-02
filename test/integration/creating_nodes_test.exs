@@ -9,6 +9,8 @@ defmodule Integration.CreatingNodesTest do
     :ok
   end
 
+  @moduletag integration: true
+
   describe "querying stuff in neo4j" do
     test "is able to insert new nodes with CREATE statements" do
       Server.transaction(fn conn ->

@@ -9,6 +9,8 @@ defmodule Integration.QueryingTest do
     :ok
   end
 
+  @moduletag integration: true
+
   describe "querying stuff in neo4j" do
     test "is able to fetch nodes using MATCH queries" do
       Server.transaction(fn conn ->
