@@ -9,10 +9,10 @@ image_name="ex-cypher"
 case $command_name in
   build)
     echo "Building dev environment...."
-    docker build --build-arg uid=$EUID -t $image_name:latest .
+    docker-compose build --build-arg uid=$EUID
   ;;
 
   bash)
-    docker run --rm -it -v $PWD:/ex-cypher -w /ex-cypher $image_name bash
+    docker-compose run --rm app ./script/wait_for_neo4j bash
   ;;
 esac
