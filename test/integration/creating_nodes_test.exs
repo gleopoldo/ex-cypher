@@ -4,9 +4,8 @@ defmodule Integration.CreatingNodesTest do
   import ExCypher
   alias ExCypher.Support.Server
 
-  setup_all do
+  setup do
     Server.start_link()
-    :ok
   end
 
   @moduletag integration: true
@@ -102,6 +101,37 @@ defmodule Integration.CreatingNodesTest do
 
         assert %{stats: %{"nodes-created" => 1, "relationships-created" => 2}} =
                  Server.query(conn, query)
+      end)
+    end
+
+    test "is able to create nodes with multiple labels" do
+      Server.transaction(fn conn ->
+        query =
+          cypher do
+            create(
+              node(:person, [:Person, :Inventor, :Artist], %{name: "Leonardo da Vinci"})
+            )
+          end
+
+        assert %{stats: %{"nodes-created" => 1}} = Server.query(conn, query)
+
+        assert %{records: [["Leonardo da Vinci"]]} =
+          Server.query(conn, cypher do
+            match(node(:person, [:Inventor]))
+            return person.name
+          end)
+
+        assert %{records: [["Leonardo da Vinci"]]} =
+          Server.query(conn, cypher do
+            match(node(:person, [:Person]))
+            return person.name
+          end)
+
+        assert %{records: [["Leonardo da Vinci"]]} =
+          Server.query(conn, cypher do
+            match(node(:person, [:Artist, :Inventor]))
+            return person.name
+          end)
       end)
     end
   end

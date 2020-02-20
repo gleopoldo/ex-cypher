@@ -4,9 +4,8 @@ defmodule Integration.QueryingTest do
   import ExCypher
   alias ExCypher.Support.Server
 
-  setup_all do
+  setup do
     Server.start_link()
-    :ok
   end
 
   @moduletag integration: true
