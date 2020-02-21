@@ -6,21 +6,21 @@ defmodule ExCypher.Support.Server do
   alias Bolt.Sips, as: Neo
 
   def start_link do
-    {:ok, _} = Application.ensure_all_started(:bolt_sips, :permanent)
-
-    case Bolt.Sips.start_link(url: @server_url) do
-      {:ok, _pid} -> :ok
-      #{:error, {:reason, :already_started}} -> :ok
-      term -> term
+    try do
+      case Bolt.Sips.start_link(url: @server_url) do
+        {:ok, _pid} -> :ok
+        term -> term
+      end
+    catch
+      # seems that we may fall into a race condition starting Bolt.Sips.Router
+      # when adding this line to a setup_all in more than one test.
+      :exit, {:noproc, _} -> __MODULE__.start_link()
+      err -> err
     end
   end
 
-  def transaction(function) do
-    Neo.transaction(Neo.conn(), fn conn ->
-      function.(conn)
-      Neo.rollback(conn, :dont_persist)
-    end)
-  end
+  def query(query) when is_binary(query),
+    do: query(Neo.conn(), query)
 
   def query(conn, query) do
     with {:ok, response} <- Neo.query(conn, query) do
