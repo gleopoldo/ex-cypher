@@ -46,7 +46,7 @@ defmodule ExCypher.Graph.Component do
 
   def escape(list)
       when is_list(list),
-      do: [":" | Enum.intersperse(list, ",")]
+      do: [":" | Enum.intersperse(list, ":")]
 
   def escape(props = %{}) do
     args =

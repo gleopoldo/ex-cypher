@@ -45,7 +45,7 @@ defmodule Queries.MatchTest do
           match(node(:bob, [:Person, :Employee]))
         end
 
-      assert "MATCH (bob:Person,Employee)" = query
+      assert "MATCH (bob:Person:Employee)" = query
     end
 
     test "with a name and one prop" do
