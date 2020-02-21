@@ -18,9 +18,9 @@ defmodule Integration.QueryingTest do
   describe "querying stuff in neo4j" do
     test "is able to fetch nodes using MATCH queries" do
       Server.query("""
-          CREATE (:Person {name:"Bob"}), (:Person {name:"Ellie"}),
-                 (:Person {name:"Mark"}), (:Person {name:"Jane"})
-        """)
+        CREATE (:Person {name:"Bob"}), (:Person {name:"Ellie"}),
+               (:Person {name:"Mark"}), (:Person {name:"Jane"})
+      """)
 
       query =
         cypher do
@@ -29,18 +29,17 @@ defmodule Integration.QueryingTest do
           order({p.name, :asc})
         end
 
-      assert %{records: [["Bob"], ["Ellie"], ["Jane"], ["Mark"]]} =
-        Server.query(query)
+      assert %{records: [["Bob"], ["Ellie"], ["Jane"], ["Mark"]]} = Server.query(query)
     end
 
     test "is able to filter nodes" do
       Server.query("""
-          CREATE (:Person {name:"Bob", age:42}),
-                 (:Person {name:"Peter", age:35}),
-                 (:Person {name:"Lucy", age:35}),
-                 (:Person {name:"Anne", age:18}),
-                 (:Person {name:"Mary", age:25})
-        """)
+        CREATE (:Person {name:"Bob", age:42}),
+               (:Person {name:"Peter", age:35}),
+               (:Person {name:"Lucy", age:35}),
+               (:Person {name:"Anne", age:18}),
+               (:Person {name:"Mary", age:25})
+      """)
 
       query =
         cypher do
@@ -56,10 +55,10 @@ defmodule Integration.QueryingTest do
 
     test "is able to filter required nodes with different labels" do
       Server.query("""
-          CREATE (:Droid {name:"R2-D2"}),
-                 (:Droid {name:"C3PO"}),
-                 (:Cyborg {name:"Arnold"})
-        """)
+        CREATE (:Droid {name:"R2-D2"}),
+               (:Droid {name:"C3PO"}),
+               (:Cyborg {name:"Arnold"})
+      """)
 
       query =
         cypher do
@@ -73,13 +72,13 @@ defmodule Integration.QueryingTest do
 
     test "is able to match associations" do
       Server.query("""
-          CREATE (acme:Company {name: "Acme"}),
-                 (marvel:Company {name: "Marvel"}),
-                 (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
-                 (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
-                 (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
-                 (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
-          """)
+      CREATE (acme:Company {name: "Acme"}),
+             (marvel:Company {name: "Marvel"}),
+             (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
+             (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
+             (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
+             (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
+      """)
 
       query =
         cypher do
@@ -96,14 +95,14 @@ defmodule Integration.QueryingTest do
 
     test "is able to match associations and apply filters" do
       Server.query("""
-          CREATE (acme:Company {name: "Acme"}),
-                 (marvel:Company {name: "Marvel"}),
-                 (justin:Person {name:"Justin"}),
-                 (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
-                 (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
-                 (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
-                 (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
-          """)
+      CREATE (acme:Company {name: "Acme"}),
+             (marvel:Company {name: "Marvel"}),
+             (justin:Person {name:"Justin"}),
+             (martin:Person {name:"Martin"})-[:WORKS_IN]->(acme),
+             (anne:Person {name:"Anne"})-[:WORKS_IN]->(acme),
+             (hiro:Person {name:"Hiro"})-[:WORKS_IN]->(marvel),
+             (charles:Person {name:"Charles"})-[:WORKS_IN]->(acme)
+      """)
 
       query =
         cypher do
@@ -113,8 +112,7 @@ defmodule Integration.QueryingTest do
           order({person.name, :asc})
         end
 
-      assert %{records: [["Anne"], ["Charles"], ["Martin"]]} =
-        Server.query(query)
+      assert %{records: [["Anne"], ["Charles"], ["Martin"]]} = Server.query(query)
     end
   end
 end

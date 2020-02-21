@@ -38,9 +38,9 @@ defmodule Integration.CreatingNodesTest do
         end
 
       assert %{
-        records: [],
-        stats: %{"nodes-created" => 3}
-      } = Server.query(query)
+               records: [],
+               stats: %{"nodes-created" => 3}
+             } = Server.query(query)
     end
 
     test "is able to build associations" do
@@ -68,9 +68,9 @@ defmodule Integration.CreatingNodesTest do
         end
 
       assert %{
-        records: [["Anne"], ["Jack"]],
-        stats: %{"relationships-created" => 2}
-      } = Server.query(query)
+               records: [["Anne"], ["Jack"]],
+               stats: %{"relationships-created" => 2}
+             } = Server.query(query)
     end
 
     test "is able to merge nodes and relationships" do
@@ -97,37 +97,40 @@ defmodule Integration.CreatingNodesTest do
           merge((node(:anne) -- rel([:WORKS_WITH]) -> node(:jack)))
         end
 
-      assert %{stats: %{"nodes-created" => 1, "relationships-created" => 2}} =
-        Server.query(query)
+      assert %{stats: %{"nodes-created" => 1, "relationships-created" => 2}} = Server.query(query)
     end
 
     test "is able to create nodes with multiple labels" do
       query =
         cypher do
-          create(
-            node(:person, [:Person, :Inventor, :Artist], %{name: "Leonardo da Vinci"})
-          )
+          create(node(:person, [:Person, :Inventor, :Artist], %{name: "Leonardo da Vinci"}))
         end
 
       assert %{stats: %{"nodes-created" => 1}} = Server.query(query)
 
       assert %{records: [["Leonardo da Vinci"]]} =
-        Server.query(cypher do
-          match(node(:person, [:Inventor]))
-          return person.name
-        end)
+               Server.query(
+                 cypher do
+                   match(node(:person, [:Inventor]))
+                   return(person.name)
+                 end
+               )
 
       assert %{records: [["Leonardo da Vinci"]]} =
-        Server.query(cypher do
-          match(node(:person, [:Person]))
-          return person.name
-        end)
+               Server.query(
+                 cypher do
+                   match(node(:person, [:Person]))
+                   return(person.name)
+                 end
+               )
 
       assert %{records: [["Leonardo da Vinci"]]} =
-        Server.query(cypher do
-          match(node(:person, [:Artist, :Inventor]))
-          return person.name
-        end)
+               Server.query(
+                 cypher do
+                   match(node(:person, [:Artist, :Inventor]))
+                   return(person.name)
+                 end
+               )
+    end
   end
-end
 end
