@@ -37,6 +37,9 @@ defmodule ExCypher.Statements.Generic.Expression do
       is_list(ast) ->
         %__MODULE__{type: :list, args: ast, env: env}
 
+      variable?(ast) ->
+        %__MODULE__{type: :var, args: ast, env: env}
+
       true ->
         %__MODULE__{args: nil, env: env}
     end
@@ -61,6 +64,9 @@ defmodule ExCypher.Statements.Generic.Expression do
   # args, get first and last term. must have only two
   @associations [:--, :->, :<-]
   def association?({assoc, _ctx, args}) when assoc in @associations,
-  do: true
+    do: true
   def association?(_), do: false
+
+  def variable?({var_name, _ctx, nil}), do: is_atom(var_name)
+  def variable?(_), do: false
 end

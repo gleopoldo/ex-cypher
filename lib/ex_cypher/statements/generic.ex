@@ -130,8 +130,12 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(term = {var_name, _ctx, nil}, _env) when is_atom(var_name) do
-    escape(term)
+  def parse(term = {var_name, _ctx, nil}, env) when is_atom(var_name) do
+    expr = Expression.new(term, env)
+
+    if expr.type == :var do
+      escape(expr.args)
+    end
   end
 
   def parse(term, _env), do: term |> Macro.to_string()
