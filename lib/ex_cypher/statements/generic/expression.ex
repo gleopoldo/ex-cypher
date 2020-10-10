@@ -45,26 +45,22 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-    # args
   def fragment?({:fragment, _ctx, _args}), do: true
   def fragment?(_), do: false
 
-    # args, get first and last term. must have only two
   def property?({{:., _, [_first, _last | []]}, _, _}), do: true
   def property?(_), do: false
 
-    # args
   def node?({:node, _ctx, args}), do: true
   def node?(_), do: false
 
-  # args
   def relationship?({:rel, _ctx, args}), do: true
   def relationship?(_), do: false
 
-  # args, get first and last term. must have only two
   @associations [:--, :->, :<-]
   def association?({assoc, _ctx, args}) when assoc in @associations,
     do: true
+
   def association?(_), do: false
 
   def variable?({var_name, _ctx, nil}), do: is_atom(var_name)

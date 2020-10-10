@@ -20,7 +20,6 @@ defmodule ExCypher.Statements.Generic do
   # elixir's function identification on unknown names, for example,
   # can be shared with other modules
 
-
   alias ExCypher.Graph.{Node, Relationship}
   alias ExCypher.Statements.Generic.Expression
 
