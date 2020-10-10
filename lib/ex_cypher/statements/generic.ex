@@ -21,6 +21,7 @@ defmodule ExCypher.Statements.Generic do
   # can be shared with other modules
 
   alias ExCypher.Graph.{Node, Relationship}
+  alias ExCypher.Statements.Generic.Expression
 
   @spec parse(ast :: term()) :: String.t()
 
@@ -28,76 +29,79 @@ defmodule ExCypher.Statements.Generic do
 
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
-  def parse(ast = {{:., _, [first, last | []]}, _, _}, env) do
-    if is_var?(first, env) do
-      escape(ast)
-    else
-      {term, _, _} = first
-      "#{Atom.to_string(term)}.#{parse(last)}"
+  def parse(ast, env) do
+    expr = Expression.new(ast, env)
+
+    case expr.type do
+      :property ->
+        [first, last] = expr.args
+
+        if is_var?(first, env) do
+          escape(ast)
+        else
+          {term, _, _} = first
+          "#{Atom.to_string(term)}.#{parse(last)}"
+        end
+
+      :fragment ->
+        expr.args
+        |> Enum.map(&parse/1)
+        |> Enum.map(&String.replace(&1, "\"", ""))
+        |> Enum.join(", ")
+
+      :node ->
+        args =
+          expr.args
+          |> Enum.map(fn
+            {:%{}, _ctx, args} -> Enum.into(args, %{})
+            term -> term
+          end)
+
+        apply(Node, :node, args)
+
+      :relationship ->
+        args =
+          expr.args
+          |> Enum.map(fn
+            {:%{}, _ctx, args} -> Enum.into(args, %{})
+            term -> term
+          end)
+
+        apply(Relationship, :rel, args)
+
+      :association ->
+        [association, {from, to}] = expr.args
+
+        from = {type(:from, from), parse(from)}
+        to = {type(:to, to), parse(to)}
+
+        apply(Relationship, :assoc, [association, {from, to}])
+
+      :null ->
+        "NULL"
+
+      :alias ->
+        Atom.to_string(expr.args)
+
+      :list ->
+        expr.args
+        |> Enum.map(&parse/1)
+        |> Enum.intersperse(",")
+
+      :var ->
+        escape(expr.args)
+
+      _ ->
+        Macro.to_string(expr.args)
     end
   end
-
-  # Injects raw cypher functions
-  def parse({:fragment, _ctx, args}, _env) do
-    args
-    |> Enum.map(&parse/1)
-    |> Enum.map(&String.replace(&1, "\"", ""))
-    |> Enum.join(", ")
-  end
-
-  def parse({:node, _ctx, args}, _env) do
-    args =
-      args
-      |> Enum.map(fn
-        {:%{}, _ctx, args} -> Enum.into(args, %{})
-        term -> term
-      end)
-
-    apply(Node, :node, args)
-  end
-
-  def parse({:rel, _ctx, args}, _env) do
-    args =
-      args
-      |> Enum.map(fn
-        {:%{}, _ctx, args} -> Enum.into(args, %{})
-        term -> term
-      end)
-
-    apply(Relationship, :rel, args)
-  end
-
-  @associations [:--, :->, :<-]
-  def parse({association, _ctx, [from, to]}, _env)
-      when association in @associations do
-    from = {type(:from, from), parse(from)}
-    to = {type(:to, to), parse(to)}
-
-    apply(Relationship, :assoc, [association, {from, to}])
-  end
-
-  def parse(nil, _env), do: "NULL"
-
-  def parse(term, _env) when is_atom(term),
-    do: Atom.to_string(term)
-
-  def parse(list, _env) when is_list(list) do
-    list
-    |> Enum.map(&parse/1)
-    |> Enum.intersperse(",")
-  end
-
-  def parse(term = {var_name, _ctx, nil}, _env) when is_atom(var_name) do
-    escape(term)
-  end
-
-  def parse(term, _env), do: term |> Macro.to_string()
 
   # We cannot rely on string manipulation in order to identify whether a given
   # node represents a node or a relationship as was being made before, 'cause it
   # can lead to problems when unquoting bound variables.
   #
   # It's better to rely on the AST structure itself instead
+  @associations [:--, :->, :<-]
   def type(side, ast_node) do
     case {side, ast_node} do
       {_side, {:node, _ctx, _args}} ->
