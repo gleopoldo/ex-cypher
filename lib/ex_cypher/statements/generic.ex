@@ -20,7 +20,9 @@ defmodule ExCypher.Statements.Generic do
   # elixir's function identification on unknown names, for example,
   # can be shared with other modules
 
+
   alias ExCypher.Graph.{Node, Relationship}
+  alias ExCypher.Statements.Generic.Expression
 
   @spec parse(ast :: term()) :: String.t()
 
@@ -29,51 +31,67 @@ defmodule ExCypher.Statements.Generic do
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse(ast = {{:., _, [first, last | []]}, _, _}, env) do
-    if is_var?(first, env) do
-      escape(ast)
-    else
-      {term, _, _} = first
-      "#{Atom.to_string(term)}.#{parse(last)}"
+    expr = Expression.new(ast, env)
+
+    if expr.type == :property do
+      [first, last] = expr.args
+
+      if is_var?(first, env) do
+        escape(ast)
+      else
+        {term, _, _} = first
+        "#{Atom.to_string(term)}.#{parse(last)}"
+      end
     end
   end
 
   # Injects raw cypher functions
-  def parse({:fragment, _ctx, args}, _env) do
-    args
-    |> Enum.map(&parse/1)
-    |> Enum.map(&String.replace(&1, "\"", ""))
-    |> Enum.join(", ")
+  def parse(ast = {:fragment, _ctx, args}, env) do
+    expr = Expression.new(ast, env)
+
+    if expr.type == :fragment do
+      expr.args
+      |> Enum.map(&parse/1)
+      |> Enum.map(&String.replace(&1, "\"", ""))
+      |> Enum.join(", ")
+    end
   end
 
-  def parse({:node, _ctx, args}, _env) do
-    args =
-      args
-      |> Enum.map(fn
-        {:%{}, _ctx, args} -> Enum.into(args, %{})
-        term -> term
-      end)
+  def parse(ast = {:node, _ctx, args}, _env) do
+    if Expression.node?(ast) do
+      args =
+        args
+        |> Enum.map(fn
+          {:%{}, _ctx, args} -> Enum.into(args, %{})
+          term -> term
+        end)
 
-    apply(Node, :node, args)
+        apply(Node, :node, args)
+    end
   end
 
-  def parse({:rel, _ctx, args}, _env) do
-    args =
-      args
-      |> Enum.map(fn
-        {:%{}, _ctx, args} -> Enum.into(args, %{})
-        term -> term
-      end)
+  def parse(ast = {:rel, _ctx, args}, _env) do
+    if Expression.relationship?(ast) do
+      args =
+        args
+        |> Enum.map(fn
+          {:%{}, _ctx, args} -> Enum.into(args, %{})
+          term -> term
+        end)
 
-    apply(Relationship, :rel, args)
+      apply(Relationship, :rel, args)
+    end
   end
 
   @associations [:--, :->, :<-]
-  def parse({association, _ctx, [from, to]}, _env)
+  def parse(ast = {association, _ctx, [from, to]}, _env)
       when association in @associations do
-    from = {type(:from, from), parse(from)}
-    to = {type(:to, to), parse(to)}
+    if Expression.association?(ast) do
+      from = {type(:from, from), parse(from)}
+      to = {type(:to, to), parse(to)}
 
-    apply(Relationship, :assoc, [association, {from, to}])
+      apply(Relationship, :assoc, [association, {from, to}])
+    end
   end
 
   def parse(nil, _env), do: "NULL"
