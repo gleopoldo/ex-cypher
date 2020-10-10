@@ -4,15 +4,72 @@ command_name=$1
 shift
 command_args=$@
 
+# The project image name, used only in dev
 image_name="ex-cypher"
 
+# Runs a command in the docker container
+run(){
+  docker-compose run --rm app ./script/wait_for_neo4j $1
+}
+
+# Prints the command usage instructions, with all options available at
+# the case statement below
+show_usage(){
+  echo "Usage:"
+  echo
+  echo "setup          - setups the development environment"
+  echo "bash           - accesses the container bash console"
+  echo "run            - runs an arbitrary command whithin the container"
+  echo "test           - runs mix test"
+  echo "credo          - runs mix credo"
+  echo "format         - runs mix format"
+  echo "format --check - checks whether the code is formatted"
+}
+
 case $command_name in
-  build)
+  setup)
     echo "Building dev environment...."
     docker-compose build --build-arg uid=$EUID
+
   ;;
 
   bash)
-    docker-compose run --rm app ./script/wait_for_neo4j bash
+    run bash
+  ;;
+
+  run)
+    run $command_args
+  ;;
+
+  test)
+    run mix test
+  ;;
+
+  credo)
+    run mix credo --strict
+  ;;
+
+  format)
+    if [[ $command_args && $command_args = "--check" ]]; then
+      run mix format --check-formatted
+    elif [[ $command_args ]]; then
+      echo "Unkown option for \"format\" command"
+      show_usage
+      exit 1
+    else
+      echo "Formatting"
+      run mix format
+    fi
+  ;;
+
+  help)
+    show_usage
+  ;;
+
+  *)
+    echo "Unknown command $command_args"
+    show_usage
+
+    exit 1
   ;;
 esac
