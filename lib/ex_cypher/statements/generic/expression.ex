@@ -1,4 +1,8 @@
 defmodule ExCypher.Statements.Generic.Expression do
+  @moduledoc """
+    A module to abstract the AST format into something mode human-readable
+  """
+
   defstruct [:type, :env, :args]
 
   def new(ast, env) do
@@ -45,7 +49,10 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def fragment?({:fragment, _ctx, _args}), do: true
+  def fragment?({:fragment, _ctx, args}) do
+    {:ok, {:fragment, args}}
+  end
+
   def fragment?(_), do: false
 
   def property?({{:., _, [_first, _last | []]}, _, _}), do: true
