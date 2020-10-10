@@ -72,10 +72,13 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(ast = {:rel, _ctx, args}, _env) do
-    if Expression.relationship?(ast) do
+  def parse(ast = {:rel, _ctx, args}, env) do
+    expr = Expression.new(ast, env)
+
+    if expr.type == :relationship do
+
       args =
-        args
+        expr.args
         |> Enum.map(fn
           {:%{}, _ctx, args} -> Enum.into(args, %{})
           term -> term

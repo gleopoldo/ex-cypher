@@ -15,6 +15,11 @@ defmodule ExCypher.Statements.Generic.Expression do
         {_command, _, args} = ast
         %__MODULE__{type: :node, args: args, env: env}
 
+      relationship?(ast) ->
+        {_command, _, args} = ast
+        %__MODULE__{type: :relationship, args: args, env: env}
+
+
       true ->
         %__MODULE__{args: nil, env: env}
     end
