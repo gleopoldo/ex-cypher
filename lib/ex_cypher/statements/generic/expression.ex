@@ -19,6 +19,17 @@ defmodule ExCypher.Statements.Generic.Expression do
         {_command, _, args} = ast
         %__MODULE__{type: :relationship, args: args, env: env}
 
+      association?(ast) ->
+        {association, _ctx, [from, to]} = ast
+
+        %__MODULE__{
+          type: :association,
+          args: [association, {from, to}],
+          env: env
+        }
+
+      is_nil(ast) ->
+        %__MODULE__{type: :null, args: nil, env: env}
 
       true ->
         %__MODULE__{args: nil, env: env}
@@ -37,13 +48,13 @@ defmodule ExCypher.Statements.Generic.Expression do
   def node?({:node, _ctx, args}), do: true
   def node?(_), do: false
 
-    # args
-    def relationship?({:rel, _ctx, args}), do: true
-    def relationship?(_), do: false
+  # args
+  def relationship?({:rel, _ctx, args}), do: true
+  def relationship?(_), do: false
 
-    # args, get first and last term. must have only two
-    @associations [:--, :->, :<-]
-    def association?({assoc, _ctx, args}) when assoc in @associations,
-    do: true
-    def association?(_), do: false
+  # args, get first and last term. must have only two
+  @associations [:--, :->, :<-]
+  def association?({assoc, _ctx, args}) when assoc in @associations,
+  do: true
+  def association?(_), do: false
 end

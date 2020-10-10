@@ -89,9 +89,14 @@ defmodule ExCypher.Statements.Generic do
   end
 
   @associations [:--, :->, :<-]
-  def parse(ast = {association, _ctx, [from, to]}, _env)
+  def parse(ast = {association, _ctx, [from, to]}, env)
       when association in @associations do
-    if Expression.association?(ast) do
+
+    expr = Expression.new(ast, env)
+
+    if expr.type == :association do
+      [association, {from, to}] = expr.args
+
       from = {type(:from, from), parse(from)}
       to = {type(:to, to), parse(to)}
 
@@ -99,7 +104,13 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(nil, _env), do: "NULL"
+  def parse(ast = nil, env) do
+    expr = Expression.new(ast, env)
+
+    if expr.type == :null do
+      "NULL"
+    end
+  end
 
   def parse(term, _env) when is_atom(term),
     do: Atom.to_string(term)
