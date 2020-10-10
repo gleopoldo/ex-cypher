@@ -30,118 +30,71 @@ defmodule ExCypher.Statements.Generic do
 
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
-  def parse(ast = {{:., _, [first, last | []]}, _, _}, env) do
+  def parse(ast, env) do
     expr = Expression.new(ast, env)
 
-    if expr.type == :property do
-      [first, last] = expr.args
+    case expr.type do
+      :property ->
+        [first, last] = expr.args
 
-      if is_var?(first, env) do
-        escape(ast)
-      else
-        {term, _, _} = first
-        "#{Atom.to_string(term)}.#{parse(last)}"
-      end
-    end
-  end
+        if is_var?(first, env) do
+          escape(ast)
+        else
+          {term, _, _} = first
+          "#{Atom.to_string(term)}.#{parse(last)}"
+        end
 
-  # Injects raw cypher functions
-  def parse(ast = {:fragment, _ctx, args}, env) do
-    expr = Expression.new(ast, env)
-
-    if expr.type == :fragment do
-      expr.args
-      |> Enum.map(&parse/1)
-      |> Enum.map(&String.replace(&1, "\"", ""))
-      |> Enum.join(", ")
-    end
-  end
-
-  def parse(ast = {:node, _ctx, args}, env) do
-    expr = Expression.new(ast, env)
-
-    if expr.type == :node do
-      args =
+      :fragment ->
         expr.args
-        |> Enum.map(fn
-          {:%{}, _ctx, args} -> Enum.into(args, %{})
-          term -> term
-        end)
+        |> Enum.map(&parse/1)
+        |> Enum.map(&String.replace(&1, "\"", ""))
+        |> Enum.join(", ")
 
-      apply(Node, :node, args)
-    end
-  end
+      :node ->
+        args =
+          expr.args
+          |> Enum.map(fn
+            {:%{}, _ctx, args} -> Enum.into(args, %{})
+            term -> term
+          end)
 
-  def parse(ast = {:rel, _ctx, args}, env) do
-    expr = Expression.new(ast, env)
+        apply(Node, :node, args)
 
-    if expr.type == :relationship do
+      :relationship ->
+        args =
+          expr.args
+          |> Enum.map(fn
+            {:%{}, _ctx, args} -> Enum.into(args, %{})
+            term -> term
+          end)
 
-      args =
+        apply(Relationship, :rel, args)
+
+      :association ->
+        [association, {from, to}] = expr.args
+
+        from = {type(:from, from), parse(from)}
+        to = {type(:to, to), parse(to)}
+
+        apply(Relationship, :assoc, [association, {from, to}])
+
+      :null ->
+        "NULL"
+
+      :alias ->
+        Atom.to_string(expr.args)
+
+      :list ->
         expr.args
-        |> Enum.map(fn
-          {:%{}, _ctx, args} -> Enum.into(args, %{})
-          term -> term
-        end)
+        |> Enum.map(&parse/1)
+        |> Enum.intersperse(",")
 
-      apply(Relationship, :rel, args)
+      :var ->
+        escape(expr.args)
+
+      _ ->
+        Macro.to_string(expr.args)
     end
-  end
-
-  @associations [:--, :->, :<-]
-  def parse(ast = {association, _ctx, [from, to]}, env)
-      when association in @associations do
-
-    expr = Expression.new(ast, env)
-
-    if expr.type == :association do
-      [association, {from, to}] = expr.args
-
-      from = {type(:from, from), parse(from)}
-      to = {type(:to, to), parse(to)}
-
-      apply(Relationship, :assoc, [association, {from, to}])
-    end
-  end
-
-  def parse(ast = nil, env) do
-    expr = Expression.new(ast, env)
-
-    if expr.type == :null do
-      "NULL"
-    end
-  end
-
-  def parse(term, env) when is_atom(term) do
-    expr = Expression.new(term, env)
-
-    if expr.type == :alias do
-      Atom.to_string(expr.args)
-    end
-  end
-
-  def parse(list, env) when is_list(list) do
-    expr = Expression.new(list, env)
-
-    if expr.type == :list do
-      expr.args
-      |> Enum.map(&parse/1)
-      |> Enum.intersperse(",")
-    end
-  end
-
-  def parse(term = {var_name, _ctx, nil}, env) when is_atom(var_name) do
-    expr = Expression.new(term, env)
-
-    if expr.type == :var do
-      escape(expr.args)
-    end
-  end
-
-  def parse(term, env) do
-    expr = Expression.new(term, env)
-
-    Macro.to_string(expr.args)
   end
 
   # We cannot rely on string manipulation in order to identify whether a given
@@ -149,6 +102,7 @@ defmodule ExCypher.Statements.Generic do
   # can lead to problems when unquoting bound variables.
   #
   # It's better to rely on the AST structure itself instead
+  @associations [:--, :->, :<-]
   def type(side, ast_node) do
     case {side, ast_node} do
       {_side, {:node, _ctx, _args}} ->
