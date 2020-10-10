@@ -120,10 +120,14 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(list, _env) when is_list(list) do
-    list
-    |> Enum.map(&parse/1)
-    |> Enum.intersperse(",")
+  def parse(list, env) when is_list(list) do
+    expr = Expression.new(list, env)
+
+    if expr.type == :list do
+      expr.args
+      |> Enum.map(&parse/1)
+      |> Enum.intersperse(",")
+    end
   end
 
   def parse(term = {var_name, _ctx, nil}, _env) when is_atom(var_name) do
