@@ -112,8 +112,13 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(term, _env) when is_atom(term),
-    do: Atom.to_string(term)
+  def parse(term, env) when is_atom(term) do
+    expr = Expression.new(term, env)
+
+    if expr.type == :alias do
+      Atom.to_string(expr.args)
+    end
+  end
 
   def parse(list, _env) when is_list(list) do
     list

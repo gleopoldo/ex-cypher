@@ -31,6 +31,9 @@ defmodule ExCypher.Statements.Generic.Expression do
       is_nil(ast) ->
         %__MODULE__{type: :null, args: nil, env: env}
 
+      is_atom(ast) ->
+        %__MODULE__{type: :alias, args: ast, env: env}
+
       true ->
         %__MODULE__{args: nil, env: env}
     end
