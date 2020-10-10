@@ -138,7 +138,11 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(term, _env), do: term |> Macro.to_string()
+  def parse(term, env) do
+    expr = Expression.new(term, env)
+
+    Macro.to_string(expr.args)
+  end
 
   # We cannot rely on string manipulation in order to identify whether a given
   # node represents a node or a relationship as was being made before, 'cause it

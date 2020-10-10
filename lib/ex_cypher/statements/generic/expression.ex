@@ -41,7 +41,7 @@ defmodule ExCypher.Statements.Generic.Expression do
         %__MODULE__{type: :var, args: ast, env: env}
 
       true ->
-        %__MODULE__{args: nil, env: env}
+        %__MODULE__{type: :other, args: ast, env: env}
     end
   end
 
