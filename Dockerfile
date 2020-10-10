@@ -3,9 +3,10 @@ FROM elixir:1.10
 ARG uid
 ARG workdir=/ex-cypher
 
-RUN mix local.hex --force \
-    && adduser --uid $uid --home $workdir --disabled-password ex-cypher
-RUN apt-get update && apt-get install -y inotify-tools
+RUN adduser --uid $uid --gecos "" --disabled-password ex-cypher \
+    && apt-get update \
+    && apt-get install -y inotify-tools
+
 
 USER $uid
 WORKDIR $workdir

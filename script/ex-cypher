@@ -30,7 +30,6 @@ case $command_name in
   setup)
     echo "Building dev environment...."
     docker-compose build --build-arg uid=$EUID
-
   ;;
 
   bash)
