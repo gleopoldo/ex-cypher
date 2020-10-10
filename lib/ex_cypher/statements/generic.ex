@@ -57,16 +57,18 @@ defmodule ExCypher.Statements.Generic do
     end
   end
 
-  def parse(ast = {:node, _ctx, args}, _env) do
-    if Expression.node?(ast) do
+  def parse(ast = {:node, _ctx, args}, env) do
+    expr = Expression.new(ast, env)
+
+    if expr.type == :node do
       args =
-        args
+        expr.args
         |> Enum.map(fn
           {:%{}, _ctx, args} -> Enum.into(args, %{})
           term -> term
         end)
 
-        apply(Node, :node, args)
+      apply(Node, :node, args)
     end
   end
 

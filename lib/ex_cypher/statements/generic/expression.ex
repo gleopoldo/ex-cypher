@@ -4,12 +4,16 @@ defmodule ExCypher.Statements.Generic.Expression do
   def new(ast, env) do
     cond do
       fragment?(ast) ->
-        {command, _, args} = ast
+        {_command, _, args} = ast
         %__MODULE__{type: :fragment, args: args, env: env}
 
       property?(ast) ->
         {{_, _, [first, last | []]}, _, _} = ast
         %__MODULE__{type: :property, args: [first, last], env: env}
+
+      node?(ast) ->
+        {_command, _, args} = ast
+        %__MODULE__{type: :node, args: args, env: env}
 
       true ->
         %__MODULE__{args: nil, env: env}
