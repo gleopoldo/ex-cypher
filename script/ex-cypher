@@ -9,7 +9,7 @@ image_name="ex-cypher"
 
 # Runs a command in the docker container
 run(){
-  docker-compose run --rm app ./script/wait_for_neo4j $1
+  docker-compose run --rm app ./script/wait_for_neo4j $@
 }
 
 # Prints the command usage instructions, with all options available at
