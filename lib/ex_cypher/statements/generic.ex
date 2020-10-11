@@ -50,24 +50,10 @@ defmodule ExCypher.Statements.Generic do
         |> Enum.join(", ")
 
       :node ->
-        args =
-          expr.args
-          |> Enum.map(fn
-            {:%{}, _ctx, args} -> Enum.into(args, %{})
-            term -> term
-          end)
-
-        apply(Node, :node, args)
+        apply(Node, :node, expr.args)
 
       :relationship ->
-        args =
-          expr.args
-          |> Enum.map(fn
-            {:%{}, _ctx, args} -> Enum.into(args, %{})
-            term -> term
-          end)
-
-        apply(Relationship, :rel, args)
+        apply(Relationship, :rel, expr.args)
 
       :association ->
         [association, {from, to}] = expr.args

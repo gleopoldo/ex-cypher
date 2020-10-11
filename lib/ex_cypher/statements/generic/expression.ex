@@ -41,7 +41,7 @@ defmodule ExCypher.Statements.Generic.Expression do
   defp as_node({ast, env}) do
     case ast do
       {:node, _ctx, args} ->
-        %__MODULE__{type: :node, args: args, env: env}
+        %__MODULE__{type: :node, args: parse_args(args), env: env}
 
       _ ->
         nil
@@ -51,7 +51,7 @@ defmodule ExCypher.Statements.Generic.Expression do
   defp as_relationship({ast, env}) do
     case ast do
       {:rel, _ctx, args} ->
-        %__MODULE__{type: :relationship, args: args, env: env}
+        %__MODULE__{type: :relationship, args: parse_args(args), env: env}
       _ ->
         nil
     end
@@ -91,4 +91,11 @@ defmodule ExCypher.Statements.Generic.Expression do
 
   defp variable?({var_name, _ctx, nil}), do: is_atom(var_name)
   defp variable?(_), do: false
+
+  defp parse_args(args) do
+    Enum.map(args, fn
+      {:%{}, _ctx, args} -> Enum.into(args, %{})
+      term -> term
+    end)
+  end
 end
