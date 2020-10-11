@@ -7,6 +7,7 @@ defmodule ExCypher.Statements.Generic.Expression do
 
   def new(ast, env) do
     checkers = [
+      &as_bound_variable/1,
       &as_fragment/1,
       &as_property/1,
       &as_node/1,
@@ -81,21 +82,48 @@ defmodule ExCypher.Statements.Generic.Expression do
       is_list(ast) ->
         %__MODULE__{type: :list, args: ast, env: env}
 
-      variable?(ast) ->
-        %__MODULE__{type: :var, args: ast, env: env}
-
       true ->
         %__MODULE__{type: :other, args: ast, env: env}
     end
   end
 
-  defp variable?({var_name, _ctx, nil}), do: is_atom(var_name)
-  defp variable?(_), do: false
+  #defp variable?({var_name, _ctx, nil}), do: is_atom(var_name)
+  #defp variable?(_), do: false
 
   defp parse_args(args) do
     Enum.map(args, fn
       {:%{}, _ctx, args} -> Enum.into(args, %{})
       term -> term
     end)
+  end
+
+  def as_bound_variable({ast, env}) do
+    case {ast, env} do
+      {_, nil} ->
+        nil
+
+      # matches 'var.prop' syntax
+      {{{:., _, [first, _last | []]}, _, _}, env} ->
+        if as_bound_variable({first, env}) do
+          %__MODULE__{type: :var, args: ast, env: env}
+        else
+          nil
+        end
+
+      {var = {var_name, _ctx, nil}, env} ->
+        exists = env
+          |> Macro.Env.vars()
+          |> Keyword.keys()
+          |> Enum.find(&(&1 == var_name))
+
+        if exists do
+          %__MODULE__{type: :var, args: var, env: env}
+        else
+          nil
+        end
+
+      _ ->
+        false
+    end
   end
 end
