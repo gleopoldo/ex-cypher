@@ -18,7 +18,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     Enum.find_value(checkers, fn checker -> checker.({ast, env}) end)
   end
 
-  def as_fragment({ast, env}) do
+  defp as_fragment({ast, env}) do
     case ast do
       {:fragment, _ctx, args} ->
         %__MODULE__{type: :fragment, args: args, env: env}
@@ -28,7 +28,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def as_property({ast, env}) do
+  defp as_property({ast, env}) do
     case ast do
       {{:., _, [first, last | []]}, _, _} ->
         %__MODULE__{type: :property, args: [first, last], env: env}
@@ -38,7 +38,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def as_node({ast, env}) do
+  defp as_node({ast, env}) do
     case ast do
       {:node, _ctx, args} ->
         %__MODULE__{type: :node, args: args, env: env}
@@ -48,7 +48,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def as_relationship({ast, env}) do
+  defp as_relationship({ast, env}) do
     case ast do
       {:rel, _ctx, args} ->
         %__MODULE__{type: :relationship, args: args, env: env}
@@ -57,7 +57,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def as_association({ast, env}) do
+  defp as_association({ast, env}) do
     case ast do
       {association, _ctx, [from, to]} ->
         %__MODULE__{
@@ -70,7 +70,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def another_term({ast, env}) do
+  defp another_term({ast, env}) do
     cond do
       is_nil(ast) ->
         %__MODULE__{type: :null, args: nil, env: env}
@@ -89,6 +89,6 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  def variable?({var_name, _ctx, nil}), do: is_atom(var_name)
-  def variable?(_), do: false
+  defp variable?({var_name, _ctx, nil}), do: is_atom(var_name)
+  defp variable?(_), do: false
 end
