@@ -3,35 +3,82 @@ defmodule ExCypher.Statements.Generic.Expression do
     A module to abstract the AST format into something mode human-readable
   """
 
+  alias ExCypher.Statements.Generic.Variable
+
   defstruct [:type, :env, :args]
 
+  def build(%{type: type, args: args, env: env}) do
+    %__MODULE__{type: type, args: args, env: env}
+  end
+
   def new(ast, env) do
-    cond do
-      fragment?(ast) ->
-        {_command, _, args} = ast
+    checkers = [
+      &as_bound_variable/1,
+      &as_fragment/1,
+      &as_property/1,
+      &as_node/1,
+      &as_relationship/1,
+      &as_association/1,
+      &another_term/1
+    ]
+
+    Enum.find_value(checkers, fn checker -> checker.({ast, env}) end)
+  end
+
+  defp as_fragment({ast, env}) do
+    case ast do
+      {:fragment, _ctx, args} ->
         %__MODULE__{type: :fragment, args: args, env: env}
 
-      property?(ast) ->
-        {{_, _, [first, last | []]}, _, _} = ast
+      _ ->
+        nil
+    end
+  end
+
+  defp as_property({ast, env}) do
+    case ast do
+      {{:., _, [first, last | []]}, _, _} ->
         %__MODULE__{type: :property, args: [first, last], env: env}
 
-      node?(ast) ->
-        {_command, _, args} = ast
-        %__MODULE__{type: :node, args: args, env: env}
+      _ ->
+        nil
+    end
+  end
 
-      relationship?(ast) ->
-        {_command, _, args} = ast
-        %__MODULE__{type: :relationship, args: args, env: env}
+  defp as_node({ast, env}) do
+    case ast do
+      {:node, _ctx, args} ->
+        %__MODULE__{type: :node, args: parse_args(args), env: env}
 
-      association?(ast) ->
-        {association, _ctx, [from, to]} = ast
+      _ ->
+        nil
+    end
+  end
 
+  defp as_relationship({ast, env}) do
+    case ast do
+      {:rel, _ctx, args} ->
+        %__MODULE__{type: :relationship, args: parse_args(args), env: env}
+      _ ->
+        nil
+    end
+  end
+
+  defp as_association({ast, env}) do
+    case ast do
+      {association, _ctx, [from, to]} ->
         %__MODULE__{
           type: :association,
           args: [association, {from, to}],
           env: env
         }
+      _ ->
+        nil
+    end
+  end
 
+  defp another_term({ast, env}) do
+    cond do
       is_nil(ast) ->
         %__MODULE__{type: :null, args: nil, env: env}
 
@@ -41,35 +88,21 @@ defmodule ExCypher.Statements.Generic.Expression do
       is_list(ast) ->
         %__MODULE__{type: :list, args: ast, env: env}
 
-      variable?(ast) ->
-        %__MODULE__{type: :var, args: ast, env: env}
-
       true ->
         %__MODULE__{type: :other, args: ast, env: env}
     end
   end
 
-  def fragment?({:fragment, _ctx, args}) do
-    {:ok, {:fragment, args}}
+  defp as_bound_variable({ast, env}) do
+    if Variable.bound_variable?({ast, env}) do
+      %__MODULE__{type: :var, args: ast, env: env}
+    end
   end
 
-  def fragment?(_), do: false
-
-  def property?({{:., _, [_first, _last | []]}, _, _}), do: true
-  def property?(_), do: false
-
-  def node?({:node, _ctx, args}), do: true
-  def node?(_), do: false
-
-  def relationship?({:rel, _ctx, args}), do: true
-  def relationship?(_), do: false
-
-  @associations [:--, :->, :<-]
-  def association?({assoc, _ctx, args}) when assoc in @associations,
-    do: true
-
-  def association?(_), do: false
-
-  def variable?({var_name, _ctx, nil}), do: is_atom(var_name)
-  def variable?(_), do: false
+  defp parse_args(args) do
+    Enum.map(args, fn
+      {:%{}, _ctx, args} -> Enum.into(args, %{})
+      term -> term
+    end)
+  end
 end

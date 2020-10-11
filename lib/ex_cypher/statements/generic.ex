@@ -35,45 +35,25 @@ defmodule ExCypher.Statements.Generic do
     case expr.type do
       :property ->
         [first, last] = expr.args
-
-        if is_var?(first, env) do
-          escape(ast)
-        else
-          {term, _, _} = first
-          "#{Atom.to_string(term)}.#{parse(last)}"
-        end
+        "#{parse(first, env)}.#{parse(last, env)}"
 
       :fragment ->
         expr.args
-        |> Enum.map(&parse/1)
+        |> Enum.map(& parse(&1, env))
         |> Enum.map(&String.replace(&1, "\"", ""))
         |> Enum.join(", ")
 
       :node ->
-        args =
-          expr.args
-          |> Enum.map(fn
-            {:%{}, _ctx, args} -> Enum.into(args, %{})
-            term -> term
-          end)
-
-        apply(Node, :node, args)
+        apply(Node, :node, expr.args)
 
       :relationship ->
-        args =
-          expr.args
-          |> Enum.map(fn
-            {:%{}, _ctx, args} -> Enum.into(args, %{})
-            term -> term
-          end)
-
-        apply(Relationship, :rel, args)
+        apply(Relationship, :rel, expr.args)
 
       :association ->
         [association, {from, to}] = expr.args
 
-        from = {type(:from, from), parse(from)}
-        to = {type(:to, to), parse(to)}
+        from = {type(:from, from), parse(from, env)}
+        to = {type(:to, to), parse(to, env)}
 
         apply(Relationship, :assoc, [association, {from, to}])
 
@@ -85,7 +65,7 @@ defmodule ExCypher.Statements.Generic do
 
       :list ->
         expr.args
-        |> Enum.map(&parse/1)
+        |> Enum.map(&parse(&1, env))
         |> Enum.intersperse(",")
 
       :var ->
@@ -121,17 +101,6 @@ defmodule ExCypher.Statements.Generic do
 
       {side, [term | _rest]} ->
         type(side, term)
-    end
-  end
-
-  defp is_var?({var_name, _ctx, nil}, env) do
-    if env do
-      env
-      |> Macro.Env.vars()
-      |> Keyword.keys()
-      |> Enum.find(&(&1 == var_name))
-    else
-      false
     end
   end
 
