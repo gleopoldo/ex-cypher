@@ -6,32 +6,72 @@ defmodule ExCypher.Statements.Generic.Expression do
   defstruct [:type, :env, :args]
 
   def new(ast, env) do
-    cond do
-      fragment?(ast) ->
-        {_command, _, args} = ast
+    checkers = [
+      &as_fragment/1,
+      &as_property/1,
+      &as_node/1,
+      &as_relationship/1,
+      &as_association/1,
+      &another_term/1
+    ]
+
+    Enum.find_value(checkers, fn checker -> checker.({ast, env}) end)
+  end
+
+  def as_fragment({ast, env}) do
+    case ast do
+      {:fragment, _ctx, args} ->
         %__MODULE__{type: :fragment, args: args, env: env}
 
-      property?(ast) ->
-        {{_, _, [first, last | []]}, _, _} = ast
+      _ ->
+        nil
+    end
+  end
+
+  def as_property({ast, env}) do
+    case ast do
+      {{:., _, [first, last | []]}, _, _} ->
         %__MODULE__{type: :property, args: [first, last], env: env}
 
-      node?(ast) ->
-        {_command, _, args} = ast
+      _ ->
+        nil
+    end
+  end
+
+  def as_node({ast, env}) do
+    case ast do
+      {:node, _ctx, args} ->
         %__MODULE__{type: :node, args: args, env: env}
 
-      relationship?(ast) ->
-        {_command, _, args} = ast
+      _ ->
+        nil
+    end
+  end
+
+  def as_relationship({ast, env}) do
+    case ast do
+      {:rel, _ctx, args} ->
         %__MODULE__{type: :relationship, args: args, env: env}
+      _ ->
+        nil
+    end
+  end
 
-      association?(ast) ->
-        {association, _ctx, [from, to]} = ast
-
+  def as_association({ast, env}) do
+    case ast do
+      {association, _ctx, [from, to]} ->
         %__MODULE__{
           type: :association,
           args: [association, {from, to}],
           env: env
         }
+      _ ->
+        nil
+    end
+  end
 
+  def another_term({ast, env}) do
+    cond do
       is_nil(ast) ->
         %__MODULE__{type: :null, args: nil, env: env}
 
@@ -48,27 +88,6 @@ defmodule ExCypher.Statements.Generic.Expression do
         %__MODULE__{type: :other, args: ast, env: env}
     end
   end
-
-  def fragment?({:fragment, _ctx, args}) do
-    {:ok, {:fragment, args}}
-  end
-
-  def fragment?(_), do: false
-
-  def property?({{:., _, [_first, _last | []]}, _, _}), do: true
-  def property?(_), do: false
-
-  def node?({:node, _ctx, args}), do: true
-  def node?(_), do: false
-
-  def relationship?({:rel, _ctx, args}), do: true
-  def relationship?(_), do: false
-
-  @associations [:--, :->, :<-]
-  def association?({assoc, _ctx, args}) when assoc in @associations,
-    do: true
-
-  def association?(_), do: false
 
   def variable?({var_name, _ctx, nil}), do: is_atom(var_name)
   def variable?(_), do: false
