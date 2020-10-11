@@ -3,6 +3,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     A module to abstract the AST format into something mode human-readable
   """
 
+  alias ExCypher.Statements.Generic.Association
   alias ExCypher.Statements.Generic.Variable
 
   defstruct [:type, :env, :args]
@@ -67,9 +68,12 @@ defmodule ExCypher.Statements.Generic.Expression do
   defp as_association({ast, env}) do
     case ast do
       {association, _ctx, [from, to]} ->
+        from_type = Association.type(:from, from)
+        to_type = Association.type(:to, to)
+
         %__MODULE__{
           type: :association,
-          args: [association, {from, to}],
+          args: [association, {from_type, from}, {to_type, to}],
           env: env
         }
       _ ->

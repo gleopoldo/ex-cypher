@@ -30,81 +30,52 @@ defmodule ExCypher.Statements.Generic do
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse(ast, env) do
-    expr = Expression.new(ast, env)
-
-    case expr.type do
-      :property ->
-        [first, last] = expr.args
-        "#{parse(first, env)}.#{parse(last, env)}"
-
-      :fragment ->
-        expr.args
-        |> Enum.map(& parse(&1, env))
-        |> Enum.map(&String.replace(&1, "\"", ""))
-        |> Enum.join(", ")
-
-      :node ->
-        apply(Node, :node, expr.args)
-
-      :relationship ->
-        apply(Relationship, :rel, expr.args)
-
-      :association ->
-        [association, {from, to}] = expr.args
-
-        from = {type(:from, from), parse(from, env)}
-        to = {type(:to, to), parse(to, env)}
-
-        apply(Relationship, :assoc, [association, {from, to}])
-
-      :null ->
-        "NULL"
-
-      :alias ->
-        Atom.to_string(expr.args)
-
-      :list ->
-        expr.args
-        |> Enum.map(&parse(&1, env))
-        |> Enum.intersperse(",")
-
-      :var ->
-        escape(expr.args)
-
-      _ ->
-        Macro.to_string(expr.args)
-    end
+    parse_expression Expression.new(ast, env)
   end
 
-  # We cannot rely on string manipulation in order to identify whether a given
-  # node represents a node or a relationship as was being made before, 'cause it
-  # can lead to problems when unquoting bound variables.
-  #
-  # It's better to rely on the AST structure itself instead
-  @associations [:--, :->, :<-]
-  def type(side, ast_node) do
-    case {side, ast_node} do
-      {_side, {:node, _ctx, _args}} ->
-        :node
+  defp parse_expression(expr = %Expression{type: :property}) do
+    [first, last] = expr.args
 
-      {_side, {:rel, _ctx, _args}} ->
-        :relationship
-
-      {:from, {assoc, _ctx, [_from, to | _]}} when assoc in @associations ->
-        type(:from, to)
-
-      {:to, {assoc, _ctx, [from | _]}} when assoc in @associations ->
-        type(:to, from)
-
-      {side, {other, _ctx, _args}} ->
-        type(side, other)
-
-      {side, [term | _rest]} ->
-        type(side, term)
-    end
+    "#{parse(first, expr.env)}.#{parse(last, expr.env)}"
   end
 
-  defp escape(term) do
+  defp parse_expression(expr = %Expression{type: :fragment}) do
+    expr.args
+    |> Enum.map(& parse(&1, expr.env))
+    |> Enum.map(&String.replace(&1, "\"", ""))
+    |> Enum.join(", ")
+  end
+
+  defp parse_expression(expr = %Expression{type: :node}),
+    do: apply(Node, :node, expr.args)
+
+  defp parse_expression(expr = %Expression{type: :relationship}),
+    do: apply(Relationship, :rel, expr.args)
+
+  defp parse_expression(expr = %Expression{type: :association}) do
+    [association, {from_type, from}, {to_type, to}] = expr.args
+
+    apply(Relationship, :assoc, [association, {
+      {from_type, parse(from, expr.env)},
+      {to_type, parse(to, expr.env)}
+    }])
+  end
+
+  defp parse_expression(%Expression{type: :null}),
+    do: "NULL"
+
+  defp parse_expression(expr = %Expression{type: :alias}),
+    do: Atom.to_string(expr.args)
+
+  defp parse_expression(expr = %Expression{type: :list}) do
+    expr.args
+    |> Enum.map(&parse(&1, expr.env))
+    |> Enum.intersperse(",")
+  end
+
+  defp parse_expression(expr = %Expression{type: :var}) do
+    term = expr.args
+
     quote bind_quoted: [term: term] do
       if is_binary(term) do
         "\"#{term}\""
@@ -113,4 +84,6 @@ defmodule ExCypher.Statements.Generic do
       end
     end
   end
+
+  defp parse_expression(%Expression{args: args}), do: Macro.to_string(args)
 end
