@@ -3,7 +3,13 @@ defmodule ExCypher.Statements.Generic.Expression do
     A module to abstract the AST format into something mode human-readable
   """
 
+  alias ExCypher.Statements.Generic.Variable
+
   defstruct [:type, :env, :args]
+
+  def build(%{type: type, args: args, env: env}) do
+    %__MODULE__{type: type, args: args, env: env}
+  end
 
   def new(ast, env) do
     checkers = [
@@ -87,43 +93,16 @@ defmodule ExCypher.Statements.Generic.Expression do
     end
   end
 
-  #defp variable?({var_name, _ctx, nil}), do: is_atom(var_name)
-  #defp variable?(_), do: false
+  defp as_bound_variable({ast, env}) do
+    if Variable.bound_variable?({ast, env}) do
+      %__MODULE__{type: :var, args: ast, env: env}
+    end
+  end
 
   defp parse_args(args) do
     Enum.map(args, fn
       {:%{}, _ctx, args} -> Enum.into(args, %{})
       term -> term
     end)
-  end
-
-  def as_bound_variable({ast, env}) do
-    case {ast, env} do
-      {_, nil} ->
-        nil
-
-      # matches 'var.prop' syntax
-      {{{:., _, [first, _last | []]}, _, _}, env} ->
-        if as_bound_variable({first, env}) do
-          %__MODULE__{type: :var, args: ast, env: env}
-        else
-          nil
-        end
-
-      {var = {var_name, _ctx, nil}, env} ->
-        exists = env
-          |> Macro.Env.vars()
-          |> Keyword.keys()
-          |> Enum.find(&(&1 == var_name))
-
-        if exists do
-          %__MODULE__{type: :var, args: var, env: env}
-        else
-          nil
-        end
-
-      _ ->
-        false
-    end
   end
 end
