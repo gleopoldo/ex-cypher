@@ -30,7 +30,7 @@ defmodule ExCypher.Statements.Generic do
   # Removing parenthesis from statements that elixir
   # attempts to resolve a name as a function.
   def parse(ast, env) do
-    parse_expression Expression.new(ast, env)
+    parse_expression(Expression.new(ast, env))
   end
 
   defp parse_expression(expr = %Expression{type: :property}) do
@@ -41,7 +41,7 @@ defmodule ExCypher.Statements.Generic do
 
   defp parse_expression(expr = %Expression{type: :fragment}) do
     expr.args
-    |> Enum.map(& parse(&1, expr.env))
+    |> Enum.map(&parse(&1, expr.env))
     |> Enum.map(&String.replace(&1, "\"", ""))
     |> Enum.join(", ")
   end
@@ -55,10 +55,13 @@ defmodule ExCypher.Statements.Generic do
   defp parse_expression(expr = %Expression{type: :association}) do
     [association, {from_type, from}, {to_type, to}] = expr.args
 
-    apply(Relationship, :assoc, [association, {
-      {from_type, parse(from, expr.env)},
-      {to_type, parse(to, expr.env)}
-    }])
+    apply(Relationship, :assoc, [
+      association,
+      {
+        {from_type, parse(from, expr.env)},
+        {to_type, parse(to, expr.env)}
+      }
+    ])
   end
 
   defp parse_expression(%Expression{type: :null}),

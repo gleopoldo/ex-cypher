@@ -60,6 +60,7 @@ defmodule ExCypher.Statements.Generic.Expression do
     case ast do
       {:rel, _ctx, args} ->
         %__MODULE__{type: :relationship, args: parse_args(args), env: env}
+
       _ ->
         nil
     end
@@ -76,6 +77,7 @@ defmodule ExCypher.Statements.Generic.Expression do
           args: [association, {from_type, from}, {to_type, to}],
           env: env
         }
+
       _ ->
         nil
     end
